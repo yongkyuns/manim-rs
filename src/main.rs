@@ -30,11 +30,11 @@ fn main() {
 
 fn update(app: &App, model: &mut Model, _update: Update) {
     if app.mouse.buttons.left().is_down() {
-        let start = model.tweener.pairs[0].initial.start;
+        let start = model.tweener.tweens[0].current.start;
         let end = app.mouse.position();
         model
             .tweener
-            .start(EaseType::BounceOut, Arrow { start, end }, app.time, 13.0);
+            .start(EaseType::BounceOut, Arrow { start, end }, app.time, 1.0);
     }
     model.tweener.update(app.time);
 }
@@ -43,8 +43,8 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
     draw.background().color(BLACK);
 
-    for tween_pair in &model.tweener.pairs {
-        let arrow = &tween_pair.initial;
+    for tween_pair in &model.tweener.tweens {
+        let arrow = &tween_pair.current;
         if arrow.start != arrow.end {
             draw.arrow().weight(5.0).points(arrow.start, arrow.end);
         }

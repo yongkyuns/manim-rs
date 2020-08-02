@@ -12,9 +12,9 @@ impl<S> Tween for Arrow<S>
 where
     S: BaseFloat,
 {
-    fn update(&mut self, progress: f32, target: &Self) {
+    fn update(&mut self, initial: &Self, target: &Self, progress: f32) {
         let p = S::from(progress).unwrap();
-        self.end = self.end * (S::one() - p) + target.end * p;
-        println!("{:?}", p);
+        self.start = initial.start * (S::one() - p) + target.start * p;
+        self.end = initial.end * (S::one() - p) + target.end * p;
     }
 }

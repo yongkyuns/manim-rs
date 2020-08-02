@@ -44,29 +44,35 @@ pub enum EaseType {
 
 pub trait Tween {
     // Update the current value, according to progress and final target
-    fn update(&mut self, progress: f32, target: &Self);
+    fn update(&mut self, initial: &Self, target: &Self, progress: f32);
 }
 
-pub struct TweenPair<T>
+pub struct TweenSet<T>
 where
     T: Tween,
 {
     pub initial: T,
+    pub current: T,
     pub target: T,
 }
-impl<T> TweenPair<T>
+impl<T> TweenSet<T>
 where
-    T: Tween,
+    T: Tween + Copy,
 {
     fn set_target(&mut self, target: T) {
         self.target = target;
+        self.initial = self.current;
+    }
+
+    fn update(&mut self, progress: f32) {
+        self.current.update(&self.initial, &self.target, progress);
     }
 }
 pub struct Tweener<T: Tween, S = geom::scalar::Default> {
     pub start_time: S,
     pub run_time: S,
     pub progress: S,
-    pub pairs: Vec<TweenPair<T>>,
+    pub tweens: Vec<TweenSet<T>>,
     pub ease_type: EaseType,
 }
 
@@ -84,7 +90,7 @@ where
         self.start_time = time_now;
         self.progress = S::zero();
         self.run_time = run_time;
-        for pair in &mut self.pairs {
+        for pair in &mut self.tweens {
             pair.set_target(target);
         }
     }
@@ -95,25 +101,27 @@ where
 
         self.progress = self.calculate_ease(t);
 
-        for pair in &mut self.pairs {
-            pair.initial.update(self.progress.into(), &pair.target);
+        for pair in &mut self.tweens {
+            pair.update(self.progress.into());
         }
     }
 
     pub fn clear(&mut self) {
-        self.pairs = Vec::new();
+        self.tweens = Vec::new();
     }
 
     pub fn register(&mut self, primitive: T) {
-        self.pairs.push(TweenPair {
+        self.tweens.push(TweenSet {
             initial: primitive,
+            current: primitive,
             target: primitive,
         });
     }
 
     pub fn register_with_target(&mut self, initial: T, end: T) {
-        self.pairs.push(TweenPair {
+        self.tweens.push(TweenSet {
             initial: initial,
+            current: initial,
             target: end,
         });
     }
@@ -165,13 +173,13 @@ where
         let run_time = S::one();
         let progress = S::zero();
         let ease_type = EaseType::BounceOut;
-        let pairs: Vec<TweenPair<T>> = Vec::new();
+        let tweens: Vec<TweenSet<T>> = Vec::new();
 
         Tweener {
             start_time,
             run_time,
             progress,
-            pairs,
+            tweens,
             ease_type,
         }
     }
