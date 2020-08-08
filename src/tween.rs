@@ -1,6 +1,3 @@
-//! A suite of common interpolation functions often referred to as "easing" and "tweening"
-//! functions. This API is provided by the [pennereq crate](https://docs.rs/pennereq).
-
 pub use nannou::geom::{self, pt2, Point2};
 use nannou::math::BaseFloat;
 pub use pennereq::*;
@@ -43,7 +40,7 @@ pub enum EaseType {
 }
 
 pub trait Tween {
-    // Update the current value, according to progress and final target
+    // Update current states based on initial, final target, and normalized progress.
     fn update(&mut self, initial: &Self, target: &Self, progress: f32);
 }
 
