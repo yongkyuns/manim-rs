@@ -56,7 +56,7 @@ impl<T> TweenSet<T>
 where
     T: Tween + Copy,
 {
-    fn set_target(&mut self, target: T) {
+    pub fn set_target(&mut self, target: T) {
         self.target = target;
         self.initial = self.current;
     }
@@ -82,14 +82,14 @@ where
         Self::default()
     }
 
-    pub fn start(&mut self, ease_type: EaseType, target: T, time_now: S, run_time: S) {
+    pub fn start(&mut self, ease_type: EaseType, time_now: S, run_time: S) {
         self.ease_type = ease_type;
         self.start_time = time_now;
         self.progress = S::zero();
         self.run_time = run_time;
-        for pair in &mut self.tweens {
-            pair.set_target(target);
-        }
+        // for pair in &mut self.tweens {
+        //     pair.set_target(target);
+        // }
     }
 
     pub fn update(&mut self, time_now: S) {
