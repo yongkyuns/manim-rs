@@ -1,57 +1,40 @@
-pub mod primitive;
-pub mod tween;
+#![allow(dead_code)]
 
-use nannou::prelude::*;
-use primitive::Arrow;
-use tween::{EaseType, Tweener};
+mod animation;
+mod app;
+mod consts;
+mod draw;
+mod ease;
+mod mobject;
+mod object;
+mod path;
+mod scene;
+mod walk;
 
-struct Model {
-    tweener: Tweener<Arrow>,
-}
-
-fn model(app: &App) -> Model {
-    app.new_window().size(512, 512).view(view).build().unwrap();
-
-    let r = app.window_rect();
-    let mut tweener = Tweener::new();
-
-    for r in r.subdivisions_iter() {
-        let start = r.xy();
-        let end = start + pt2(1.0, 1.0);
-        tweener.register(Arrow { start, end });
-    }
-
-    Model { tweener }
-}
+use animation::{Animate, Commands};
+use consts::*;
+use object::circle::circle;
+use scene::{Construct, Scene};
 
 fn main() {
-    nannou::app(model).update(update).run();
+    app::run();
 }
 
-fn update(app: &App, model: &mut Model, _update: Update) {
-    if app.mouse.buttons.left().is_down() {
-        for tween in model.tweener.tweens.iter_mut() {
-            let start = tween.initial.start;
-            let end = app.mouse.position();
-            tween.set_target(Arrow { start, end });
-        }
+impl Construct for Scene {
+    fn construct(&mut self) {
+        let c = circle();
+        c.shift(DOWN * 100.0);
+        self.add(c.clone());
+        self.wait(1.0);
+        self.play(c.shift(UR * 100.0))
+            .run_time(1.0)
+            .rate_func(BOUNCE_OUT);
 
-        model.tweener.start(EaseType::BounceOut, app.time, 1.0);
+        self.play(c.shift(LEFT * 100.0))
+            .run_time(1.0)
+            .rate_func(ELASTIC_OUT);
+
+        let cut_times = self.commands.time_stamps();
+        dbg!(&cut_times);
     }
-    model.tweener.update(app.time);
-}
-
-fn view(app: &App, model: &Model, frame: Frame) {
-    let draw = app.draw();
-    draw.background().color(BLACK);
-
-    for tween in &model.tweener.tweens {
-        let arrow = &tween.current;
-        if arrow.start != arrow.end {
-            draw.arrow().weight(3.0).points(arrow.start, arrow.end);
-        }
-    }
-
-    println!("fps = {}", app.fps());
-    draw.to_frame(app, &frame).unwrap();
 }
