@@ -5,7 +5,7 @@ use crate::consts::*;
 use crate::draw::Draw;
 
 use nannou;
-use nannou::color::named::*;
+// use nannou::color::named::*;
 use nannou::geom::{pt2, Point2};
 
 use std::cell::RefCell;

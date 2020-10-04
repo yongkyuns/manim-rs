@@ -2,7 +2,7 @@ pub mod circle;
 
 use self::circle::Circle;
 
-use crate::animation::{Action, Animate, SetPosition};
+use crate::animation::{Action, Animate, SetPosition, TargetAction};
 use crate::draw::Draw;
 
 use nannou;
@@ -20,7 +20,6 @@ pub enum Object {
 impl SetPosition for Object {
     fn position(&self) -> Point2 {
         if let Object::Circle(c) = self {
-            // println!("{:?}", c.position);
             c.position
         } else {
             Point2 { x: 0.0, y: 0.0 }
@@ -47,14 +46,23 @@ impl Animate for RefObject {
     // Builder allows chaining of commands for specifying animation properties
     // Builder generates Animation on drop
     // Animation::new(self.clone(), Action::Shift(by))
-    fn shift(&self, by: Vector2) -> (RefObject, Action) {
-        (
+    fn shift(&self, by: Vector2) -> TargetAction {
+        TargetAction::new(
             self.clone(),
             Action::Shift {
                 from: self.position(),
                 by,
             },
+            true,
         )
+    }
+    fn act(&mut self, action: Action) {
+        match action {
+            Action::Shift { from, by } => {
+                self.set_position(from);
+            }
+            _ => (),
+        }
     }
 }
 

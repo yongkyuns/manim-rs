@@ -33,6 +33,33 @@ impl Interpolate for Point2 {
     }
 }
 
+pub struct TargetAction {
+    pub target: RefObject,
+    pub action: Action,
+    pub finish_on_drop: bool,
+}
+impl TargetAction {
+    pub fn new(target: RefObject, action: Action, finish_on_drop: bool) -> Self {
+        Self {
+            target,
+            action,
+            finish_on_drop,
+        }
+    }
+    pub fn finish(&self) {
+        let object = self.target.borrow_mut();
+        // object.act(self.action);
+    }
+}
+
+impl Drop for TargetAction {
+    fn drop(&mut self) {
+        if self.finish_on_drop {
+            self.finish();
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Command {
     Play(Animation),
@@ -60,13 +87,6 @@ impl Command {
             if !anim.is_complete() {}
         }
     }
-    // pub fn process(&self, t: f32) {
-    //     match self {
-    //         Command::Play(anim) => anim.update(t),
-    //         Command::Add(object)=>
-    //         _ => (),
-    //     }
-    // }
 }
 
 pub trait Commands {
@@ -108,14 +128,30 @@ pub enum Action {
     Transform,
 }
 impl Action {
-    fn init(&mut self, object: RefObject) {
-        if let Action::Shift { from: _, by } = self {
-            // self.from = object.position();
-
-            *self = Action::Shift {
-                from: object.position(),
-                by: *by,
-            };
+    fn init(&mut self, object: &RefObject) {
+        match self {
+            Action::Shift { from: _, by } => {
+                let pos = object.position();
+                *self = Action::Shift { from: pos, by: *by };
+            }
+            Action::MoveTo { from: _, to } => {
+                let pos = object.position();
+                *self = Action::MoveTo { from: pos, to: *to };
+            }
+            // Action::Scale { from: _, to } => {
+            //     *self = Action::Scale { from: , to: *to };
+            // }
+            _ => (),
+        }
+    }
+    fn update(&self, object: &mut RefObject, progress: f32) {
+        match self {
+            Action::Shift { from, by } => {
+                let ref to = *from + *by;
+                let now = object.position().interp(from, to, progress);
+                object.set_position(now);
+            }
+            _ => (),
         }
     }
 }
@@ -124,8 +160,10 @@ pub trait SetPosition {
     fn position(&self) -> Point2;
     fn set_position(&mut self, to: Point2);
 }
+
 pub trait Animate: SetPosition {
-    fn shift(&self, by: Vector2) -> (RefObject, Action);
+    fn shift(&self, by: Vector2) -> TargetAction;
+    fn act(&mut self, action: Action);
 }
 
 #[derive(Debug, PartialEq)]
@@ -159,12 +197,12 @@ impl Animation {
             status,
         }
     }
+    // Set object to final state in animation
     pub fn finish(&mut self) {
-        // Set object to final state in animation
         self.status = Status::Complete;
     }
     fn init(&mut self) {
-        self.action.init(self.object.clone());
+        self.action.init(&self.object);
     }
     pub fn is_complete(&self) -> bool {
         if let Status::Complete = self.status {
@@ -176,8 +214,7 @@ impl Animation {
     fn update_status(&mut self, t: f32) {
         if t > 0.0 {
             if self.status == Status::NotStarted {
-                self.action.init(self.object.clone());
-                println!("{:?}", self.action);
+                self.action.init(&self.object);
             }
             self.status = Status::Animating(t / self.run_time);
         }
@@ -187,21 +224,9 @@ impl Animation {
 
         self.update_status(t);
         let p = self.rate_func.calculate(t / self.run_time);
-        // self.object.update(self.action, p);
-        let action = &mut self.action;
         let object = &mut self.object;
 
-        // action.update(object, p);
-        // object.update(action, p);
-
-        match action {
-            Action::Shift { from, by } => {
-                let pos = object.position();
-                let now: Point2 = pos.interp(from, by, p);
-                object.set_position(now);
-            }
-            _ => (),
-        }
+        self.action.update(object, p);
     }
 }
 

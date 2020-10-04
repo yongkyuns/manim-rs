@@ -1,11 +1,11 @@
-use crate::animation::{Action, AnimBuilder, Command, Commands};
+use crate::animation::{Action, AnimBuilder, Command, Commands, TargetAction};
 use crate::draw::Draw;
 use crate::object::RefObject;
 
 use nannou;
 
 pub trait CommandBuilder {
-    fn play(&self, target_action: (RefObject, Action)) -> AnimBuilder;
+    fn play(&self, target_action: TargetAction) -> AnimBuilder;
     fn wait(&self, time: f32);
     fn add(&self, object: RefObject);
 }
@@ -29,14 +29,13 @@ impl Scene {
         scene.wait(0.0); //Need animation to start from 0.0 sec
         scene
     }
-    pub fn play(&mut self, target_action: (RefObject, Action)) -> AnimBuilder {
-        let (object, action) = target_action;
-
-        // let index = self.commands.len();
-        // Insert placeholder for current animation
-        // self.commands.push(None);
-
-        AnimBuilder::new(self, object, action)
+    pub fn play(&mut self, mut target_action: TargetAction) -> AnimBuilder {
+        target_action.finish_on_drop = false;
+        AnimBuilder::new(
+            self,
+            target_action.target.clone(),
+            target_action.action.clone(),
+        )
     }
     pub fn wait(&mut self, time: f32) {
         self.commands.push(Command::Wait(time));

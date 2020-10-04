@@ -26,11 +26,11 @@ impl Construct for Scene {
         c.shift(DOWN * 100.0);
         self.add(c.clone());
         self.wait(1.0);
-        self.play(c.shift(UR * 100.0))
+        self.play(c.shift(RIGHT * 100.0))
             .run_time(1.0)
             .rate_func(BOUNCE_OUT);
 
-        self.play(c.shift(LEFT * 100.0))
+        self.play(c.shift(RIGHT * 100.0))
             .run_time(1.0)
             .rate_func(ELASTIC_OUT);
 
