@@ -1,8 +1,14 @@
 #![allow(dead_code)]
-// use crate::draw::Draw;
+pub use self::action::Action;
+pub use self::builder::AnimBuilder;
+pub use self::command::{Command, Commands};
+
 use crate::ease::EaseType;
 use crate::object::RefObject;
-use crate::scene::Scene;
+
+pub mod action;
+pub mod builder;
+pub mod command;
 
 use nannou::geom::{Point2, Vector2};
 
@@ -56,105 +62,6 @@ impl Drop for TargetAction {
         if self.finish_on_drop {
             self.finish();
         }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Command {
-    Play(Animation),
-    Wait(f32),
-    Add(RefObject),
-    Remove(RefObject),
-}
-impl Command {
-    pub fn run_time(&self) -> f32 {
-        match self {
-            Command::Play(anim) => anim.run_time,
-            Command::Wait(t) => *t,
-            _ => 0.0,
-        }
-    }
-    pub fn need_finish(&self) -> bool {
-        if let Command::Play(anim) = self {
-            !anim.is_complete()
-        } else {
-            false
-        }
-    }
-    pub fn finish_if_needed(&self) {
-        if let Command::Play(anim) = self {
-            if !anim.is_complete() {}
-        }
-    }
-}
-
-pub trait Commands {
-    fn run_times(&self) -> Vec<f32>;
-    fn time_stamps(&self) -> Vec<f32>;
-    fn find_index(&self, time: f32) -> (f32, usize);
-}
-
-impl Commands for Vec<Command> {
-    fn run_times(&self) -> Vec<f32> {
-        self.iter().map(|c| c.run_time()).collect()
-    }
-    fn time_stamps(&self) -> Vec<f32> {
-        let run_times = self.run_times();
-        run_times
-            .iter()
-            .scan(0.0, |sum, &t| {
-                *sum = *sum + t;
-                Some(*sum)
-            })
-            .collect()
-    }
-    fn find_index(&self, time: f32) -> (f32, usize) {
-        let time_stamps = self.time_stamps();
-        let idx = time_stamps.iter().rposition(|&t| t <= time).unwrap();
-        (time_stamps[idx], idx)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Action {
-    Shift { from: Point2, by: Vector2 },
-    MoveTo { from: Point2, to: Point2 },
-    Scale { from: f32, to: f32 },
-    Rotate { from: f32, to: f32 },
-    ShowCreation,
-    Write,
-    FadeOut,
-    Transform,
-}
-impl Action {
-    fn init(&mut self, object: &RefObject) {
-        match self {
-            Action::Shift { from: _, by } => {
-                let pos = object.position();
-                *self = Action::Shift { from: pos, by: *by };
-            }
-            Action::MoveTo { from: _, to } => {
-                let pos = object.position();
-                *self = Action::MoveTo { from: pos, to: *to };
-            }
-            // Action::Scale { from: _, to } => {
-            //     *self = Action::Scale { from: , to: *to };
-            // }
-            _ => (),
-        }
-    }
-    fn update(&self, object: &mut RefObject, progress: f32) {
-        match self {
-            Action::Shift { from, by } => {
-                let ref to = *from + *by;
-                let now = object.position().interp(from, to, progress);
-                object.set_position(now);
-            }
-            _ => (),
-        }
-    }
-    pub fn complete(&self, object: &mut RefObject) {
-        self.update(object, 1.0);
     }
 }
 
@@ -232,47 +139,6 @@ impl Animation {
         let object = &mut self.object;
 
         self.action.update(object, p);
-    }
-}
-
-#[derive(Debug)]
-pub struct AnimBuilder<'a> {
-    scene: &'a mut Scene,
-    object: RefObject,
-    action: Action,
-    run_time: f32,
-    rate_func: EaseType,
-}
-impl<'a> AnimBuilder<'a> {
-    pub fn new(scene: &'a mut Scene, object: RefObject, action: Action) -> Self {
-        AnimBuilder {
-            scene,
-            object,
-            action,
-            run_time: 1.0,
-            rate_func: EaseType::Linear,
-        }
-    }
-    pub fn run_time(mut self, duration: f32) -> Self {
-        self.run_time = duration;
-        self
-    }
-    pub fn rate_func(mut self, rate_func: EaseType) -> Self {
-        self.rate_func = rate_func;
-        self
-    }
-}
-
-impl<'a> Drop for AnimBuilder<'a> {
-    fn drop(&mut self) {
-        let anim = Animation {
-            object: self.object.clone(),
-            action: self.action.clone(),
-            run_time: self.run_time,
-            rate_func: self.rate_func,
-            status: Status::NotStarted,
-        };
-        self.scene.commands.push(Command::Play(anim));
     }
 }
 
