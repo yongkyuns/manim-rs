@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 use crate::ease::EaseType;
 use crate::object::RefObject;
 use crate::scene::Scene;
@@ -8,7 +8,6 @@ use super::Animation;
 use super::Command;
 use super::Status;
 
-#[derive(Debug)]
 pub struct AnimBuilder<'a> {
     scene: &'a mut Scene,
     object: RefObject,

@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 pub use self::action::Action;
 pub use self::builder::AnimBuilder;
 pub use self::command::{Command, Commands};
@@ -72,6 +72,8 @@ pub trait SetPosition {
 
 pub trait Animate: SetPosition {
     fn shift(&self, by: Vector2) -> TargetAction;
+    fn move_to(&self, to: Point2) -> TargetAction;
+    fn to_edge(&self, edge: Vector2) -> TargetAction;
 }
 
 #[derive(Debug, PartialEq)]

@@ -1,6 +1,5 @@
-pub mod circle;
-
-use self::circle::Circle;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::animation::{Action, Animate, SetPosition, TargetAction};
 use crate::draw::Draw;
@@ -8,8 +7,9 @@ use crate::draw::Draw;
 use nannou;
 use nannou::geom::{Point2, Vector2};
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use self::circle::Circle;
+
+pub mod circle;
 
 pub type RefObject = Rc<RefCell<Object>>;
 #[derive(Debug, PartialEq)]
@@ -52,6 +52,26 @@ impl Animate for RefObject {
             Action::Shift {
                 from: self.position(),
                 by,
+            },
+            true,
+        )
+    }
+    fn move_to(&self, to: Point2) -> TargetAction {
+        TargetAction::new(
+            self.clone(),
+            Action::MoveTo {
+                from: self.position(),
+                to,
+            },
+            true,
+        )
+    }
+    fn to_edge(&self, edge: Vector2) -> TargetAction {
+        TargetAction::new(
+            self.clone(),
+            Action::MoveTo {
+                from: self.position(),
+                to: edge,
             },
             true,
         )

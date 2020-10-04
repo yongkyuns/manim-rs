@@ -7,6 +7,7 @@ use nannou::geom::{Point2, Vector2};
 pub enum Action {
     Shift { from: Point2, by: Vector2 },
     MoveTo { from: Point2, to: Point2 },
+    // Move { from: Point2, to: Point2 },
     Scale { from: f32, to: f32 },
     Rotate { from: f32, to: f32 },
     ShowCreation,
@@ -35,6 +36,10 @@ impl Action {
         match self {
             Action::Shift { from, by } => {
                 let ref to = *from + *by;
+                let now = object.position().interp(from, to, progress);
+                object.set_position(now);
+            }
+            Action::MoveTo { from, to } => {
                 let now = object.position().interp(from, to, progress);
                 object.set_position(now);
             }

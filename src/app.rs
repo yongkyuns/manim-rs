@@ -6,10 +6,10 @@ pub fn run() {
     nannou::app(scene).update(update).run();
 }
 fn scene(app: &App) -> Scene {
-    let _window = app.new_window().size(640, 480).view(view).build().unwrap();
-    // let win_rect = app.main_window().rect().pad_left(20.0);
+    app.new_window().size(640, 480).view(view).build().unwrap();
+    let win_rect = app.main_window().rect();
 
-    let mut scene = scene::scene();
+    let mut scene = scene::scene(win_rect);
     scene.construct();
     scene
 }

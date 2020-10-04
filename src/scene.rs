@@ -3,6 +3,7 @@ use crate::draw::Draw;
 use crate::object::RefObject;
 
 use nannou;
+use nannou::geom::Rect;
 
 pub trait CommandBuilder {
     fn play(&self, target_action: TargetAction) -> AnimBuilder;
@@ -10,7 +11,6 @@ pub trait CommandBuilder {
     fn add(&self, object: RefObject);
 }
 
-#[derive(Debug)]
 pub struct Scene {
     pub commands: Vec<Command>,
     // pub objects: Vec<Box<dyn Draw>>,
@@ -18,13 +18,15 @@ pub struct Scene {
     // pub objects: Vec<Object>,
     objects: Vec<RefObject>,
     prev_command: usize,
+    window: Rect,
 }
 impl Scene {
-    pub fn new() -> Self {
+    pub fn new(window: Rect) -> Self {
         let mut scene = Scene {
             commands: Vec::new(),
             objects: Vec::new(),
             prev_command: 0,
+            window,
         };
         scene.wait(0.0); //Need animation to start from 0.0 sec
         scene
@@ -92,8 +94,8 @@ pub trait Construct {
 
 // impl CommandBuilder for Scene {}
 
-pub fn scene() -> Scene {
-    Scene::new()
+pub fn scene(window: Rect) -> Scene {
+    Scene::new(window)
 }
 
 // impl CommandBuilder for RefCell<Scene> {
