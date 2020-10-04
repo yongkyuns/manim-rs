@@ -56,14 +56,6 @@ impl Animate for RefObject {
             true,
         )
     }
-    fn act(&mut self, action: Action) {
-        match action {
-            Action::Shift { from, by } => {
-                self.set_position(from);
-            }
-            _ => (),
-        }
-    }
 }
 
 impl SetPosition for RefObject {

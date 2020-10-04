@@ -46,9 +46,8 @@ impl TargetAction {
             finish_on_drop,
         }
     }
-    pub fn finish(&self) {
-        let object = self.target.borrow_mut();
-        // object.act(self.action);
+    pub fn finish(&mut self) {
+        self.action.complete(&mut self.target);
     }
 }
 
@@ -154,6 +153,9 @@ impl Action {
             _ => (),
         }
     }
+    pub fn complete(&self, object: &mut RefObject) {
+        self.update(object, 1.0);
+    }
 }
 
 pub trait SetPosition {
@@ -163,7 +165,6 @@ pub trait SetPosition {
 
 pub trait Animate: SetPosition {
     fn shift(&self, by: Vector2) -> TargetAction;
-    fn act(&mut self, action: Action);
 }
 
 #[derive(Debug, PartialEq)]
@@ -201,9 +202,11 @@ impl Animation {
     pub fn finish(&mut self) {
         self.status = Status::Complete;
     }
+    // Initialize animation state with current object state
     fn init(&mut self) {
         self.action.init(&self.object);
     }
+    // Determine whether animation is complete
     pub fn is_complete(&self) -> bool {
         if let Status::Complete = self.status {
             true
@@ -211,6 +214,7 @@ impl Animation {
             false
         }
     }
+    // Update animation status and time
     fn update_status(&mut self, t: f32) {
         if t > 0.0 {
             if self.status == Status::NotStarted {
@@ -219,6 +223,7 @@ impl Animation {
             self.status = Status::Animating(t / self.run_time);
         }
     }
+    // Main update function for progressing through animation
     pub fn update(&mut self, t: f32) {
         let t = t.min(self.run_time);
 
