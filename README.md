@@ -3,10 +3,11 @@ manim-rs is an experimental project which aims to provide animation capability s
 
 ## Todo
 - [x] Animation module breakdown
-- [ ] Position relative position w.r.t. window (e.g. to_edge())
+- [x] Position relative position w.r.t. window (e.g. to_edge())
+- [ ] Multiple object animation
+- [ ] Benchmark with multiple objects
 - [ ] APIs to chain actions
 - [ ] More animation types (fade, color, etc.)
 - [ ] More shapes, design object -> shape architecture
-- [ ] Animation groups
 - [ ] ShowCreation, timed object generation
 - [ ] Lagged start

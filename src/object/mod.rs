@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::animation::{Action, Animate, SetPosition, TargetAction};
+use crate::animation::{Action, Animate, Direction, SetPosition, TargetAction};
+use crate::consts::*;
 use crate::draw::Draw;
 
 use nannou;
@@ -11,6 +12,8 @@ use self::circle::Circle;
 
 pub mod circle;
 
+/// Wrapper type around `Object` to retain ownership for user while
+/// `Object` is being used to construct `Scene`
 pub type RefObject = Rc<RefCell<Object>>;
 #[derive(Debug, PartialEq)]
 pub enum Object {
@@ -66,12 +69,29 @@ impl Animate for RefObject {
             true,
         )
     }
-    fn to_edge(&self, edge: Vector2) -> TargetAction {
+    fn to_edge(&self, direction: Vector2) -> TargetAction {
+        // Need to map direciton vector to internal enum
+        // Direction vector is used to maintain consistency in API
+        // Internally, enum makes it easier to compare
+        let dir_enum: Direction;
+        if direction == UP {
+            dir_enum = Direction::Up;
+        } else if direction == DOWN {
+            dir_enum = Direction::Down;
+        } else if direction == LEFT {
+            dir_enum = Direction::Left;
+        } else if direction == RIGHT {
+            dir_enum = Direction::Right;
+        } else {
+            panic!("Invalid direction specified!! Direction must be one of UP/DOWN/LEFT/RIGHT");
+        }
         TargetAction::new(
             self.clone(),
-            Action::MoveTo {
+            Action::ToEdge {
                 from: self.position(),
-                to: edge,
+                to: self.position(), // TODO: Fix this later
+                buffer: MED_SMALL_BUFF,
+                direction: dir_enum,
             },
             true,
         )

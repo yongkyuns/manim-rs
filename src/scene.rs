@@ -11,6 +11,29 @@ pub trait CommandBuilder {
     fn add(&self, object: RefObject);
 }
 
+/// Collection of resources used by animation
+pub struct Resource {
+    window: Rect,
+}
+impl Resource {
+    pub fn new(window: Rect) -> Self {
+        Self { window }
+    }
+    pub fn get_edge_upper(&self) -> f32 {
+        self.window.y.end
+    }
+    pub fn get_edge_lower(&self) -> f32 {
+        self.window.y.start
+    }
+    pub fn get_edge_left(&self) -> f32 {
+        self.window.x.start
+    }
+    pub fn get_edge_right(&self) -> f32 {
+        self.window.x.end
+    }
+}
+
+/// Top-level struct that contains animation sequence and object information
 pub struct Scene {
     pub commands: Vec<Command>,
     // pub objects: Vec<Box<dyn Draw>>,
@@ -18,7 +41,7 @@ pub struct Scene {
     // pub objects: Vec<Object>,
     objects: Vec<RefObject>,
     prev_command: usize,
-    window: Rect,
+    resource: Resource,
 }
 impl Scene {
     pub fn new(window: Rect) -> Self {
@@ -26,7 +49,7 @@ impl Scene {
             commands: Vec::new(),
             objects: Vec::new(),
             prev_command: 0,
-            window,
+            resource: Resource::new(window),
         };
         scene.wait(0.0); //Need animation to start from 0.0 sec
         scene
@@ -64,18 +87,19 @@ impl Scene {
             let objects = &mut self.objects;
             self.commands
                 .iter_mut()
-                .skip(from)
+                .skip(from + 1)
                 .take(stride)
                 .for_each(|command| match command {
-                    // Command::Play(ref mut anim) => anim.update(dt),
-                    Command::Add(object) => objects.push(object.clone()),
+                    Command::Add(object) => {
+                        objects.push(object.clone());
+                    }
                     _ => (),
                 });
         }
         // Update animation state
         let command = &mut self.commands[to];
         if let Command::Play(anim) = command {
-            anim.update(dt);
+            anim.update(dt, &self.resource);
         }
 
         self.prev_command = to;
@@ -88,24 +112,11 @@ impl Scene {
     }
 }
 
+/// Trait to provide user-facing function for making animations
 pub trait Construct {
     fn construct(&mut self);
 }
 
-// impl CommandBuilder for Scene {}
-
 pub fn scene(window: Rect) -> Scene {
     Scene::new(window)
 }
-
-// impl CommandBuilder for RefCell<Scene> {
-//     fn play(&self, target_action: (RefObject, Action)) -> AnimBuilder {
-//         self.borrow_mut().play(target_action)
-//     }
-//     fn wait(&self, time: f32) {
-//         self.borrow_mut().wait(time);
-//     }
-//     fn add(&self, object: RefObject) {
-//         self.borrow_mut().add(object);
-//     }
-// }

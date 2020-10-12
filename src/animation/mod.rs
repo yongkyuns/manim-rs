@@ -1,10 +1,11 @@
 // #![allow(dead_code)]
-pub use self::action::Action;
+pub use self::action::{Action, Direction};
 pub use self::builder::AnimBuilder;
 pub use self::command::{Command, Commands};
 
 use crate::ease::EaseType;
 use crate::object::RefObject;
+use crate::scene::Resource;
 
 pub mod action;
 pub mod builder;
@@ -112,8 +113,8 @@ impl Animation {
         self.status = Status::Complete;
     }
     // Initialize animation state with current object state
-    fn init(&mut self) {
-        self.action.init(&self.object);
+    fn init(&mut self, resource: &Resource) {
+        self.action.init(&self.object, resource);
     }
     // Determine whether animation is complete
     pub fn is_complete(&self) -> bool {
@@ -124,19 +125,19 @@ impl Animation {
         }
     }
     // Update animation status and time
-    fn update_status(&mut self, t: f32) {
+    fn update_status(&mut self, t: f32, resource: &Resource) {
         if t > 0.0 {
             if self.status == Status::NotStarted {
-                self.action.init(&self.object);
+                self.action.init(&self.object, resource);
             }
             self.status = Status::Animating(t / self.run_time);
         }
     }
     // Main update function for progressing through animation
-    pub fn update(&mut self, t: f32) {
+    pub fn update(&mut self, t: f32, resource: &Resource) {
         let t = t.min(self.run_time);
 
-        self.update_status(t);
+        self.update_status(t, resource);
         let p = self.rate_func.calculate(t / self.run_time);
         let object = &mut self.object;
 

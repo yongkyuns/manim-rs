@@ -22,7 +22,7 @@ impl Circle {
     fn new() -> Self {
         Circle {
             position: pt2(0.0, 0.0),
-            radius: 50.0,
+            radius: 20.0,
         }
     }
     // fn draw(&self, draw: nannou::Draw) {
