@@ -1,7 +1,7 @@
 // #![allow(dead_code)]
 pub use self::action::{Action, Direction};
 pub use self::builder::AnimBuilder;
-pub use self::command::{Command, Commands};
+pub use self::command::{Command, Commands, TimedCommand};
 
 use crate::ease::EaseType;
 use crate::object::RefObject;

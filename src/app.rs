@@ -19,6 +19,7 @@ fn update(app: &App, scene: &mut Scene, _update: Update) {
 }
 
 fn view(app: &App, scene: &Scene, frame: Frame) {
+    println!("{}", app.fps());
     let draw = app.draw();
     draw.background().color(BLACK);
     scene.draw(draw.clone());
