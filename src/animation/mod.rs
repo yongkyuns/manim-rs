@@ -1,7 +1,7 @@
 // #![allow(dead_code)]
 pub use self::action::{Action, Direction};
 pub use self::builder::AnimBuilder;
-pub use self::command::{Command, Commands, TimedCommand};
+pub use self::command::{Command, CommandBuilder, Commands, TimedCommand};
 
 use crate::ease::EaseType;
 use crate::object::RefObject;
@@ -151,10 +151,22 @@ mod tests {
     use crate::consts::*;
     use crate::object::circle::circle;
     use crate::scene::scene;
+    use nannou::geom::{Range, Rect};
     #[test]
     fn simple_shift() {
         let c = circle();
-        let mut scene = scene();
+        let win = Rect {
+            x: Range {
+                start: 0.0,
+                end: 300.0,
+            },
+            y: Range {
+                start: 0.0,
+                end: 300.0,
+            },
+        };
+
+        let mut scene = scene(win);
         scene.add(c.clone());
         scene.wait(1.0);
         scene

@@ -62,13 +62,13 @@ impl Action {
                 direction,
             } => {
                 let to_y = match direction {
-                    Direction::Up => resource.get_edge_upper() - *buffer,
-                    Direction::Down => resource.get_edge_lower() + *buffer,
+                    Direction::Up => resource.edge_upper() - *buffer,
+                    Direction::Down => resource.edge_lower() + *buffer,
                     _ => pos.y,
                 };
                 let to_x = match direction {
-                    Direction::Left => resource.get_edge_left() + *buffer,
-                    Direction::Right => resource.get_edge_right() - *buffer,
+                    Direction::Left => resource.edge_left() + *buffer,
+                    Direction::Right => resource.edge_right() - *buffer,
                     _ => pos.x,
                 };
                 // println!("{}, {}", to_x, to_y);

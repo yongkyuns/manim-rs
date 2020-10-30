@@ -1,4 +1,4 @@
-use super::Animation;
+use super::{AnimBuilder, Animation, TargetAction};
 use crate::object::RefObject;
 use crate::scene::Resource;
 
@@ -29,6 +29,11 @@ impl Command {
             if !anim.is_complete() {} //TODO fix completion later
         }
     }
+}
+pub trait CommandBuilder {
+    fn play(&mut self, target_action: TargetAction) -> AnimBuilder;
+    fn wait(&mut self, time: f32);
+    fn add(&mut self, object: RefObject);
 }
 
 #[derive(Debug, PartialEq)]
