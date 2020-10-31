@@ -6,22 +6,25 @@ use crate::draw::Draw;
 
 use nannou;
 // use nannou::color::named::*;
-use nannou::geom::{pt2, Point2};
+// use nannou::geom::{pt2, Point2};
+use nannou::lyon::math::{point, Angle, Point, Vector};
+use nannou::lyon::path::Path;
 
 use std::cell::RefCell;
+use std::f32::consts::PI;
 use std::rc::Rc;
 
 // pub type RefCircle = Rc<RefCell<Circle>>;
 #[derive(Debug, PartialEq)]
 pub struct Circle {
-    pub position: Point2,
+    pub position: Point,
     pub radius: f32,
 }
 
 impl Circle {
     fn new() -> Self {
         Circle {
-            position: pt2(0.0, 0.0),
+            position: point(0.0, 0.0),
             radius: 2.0,
         }
     }
@@ -36,12 +39,29 @@ impl Circle {
 impl Draw for Circle {
     fn draw(&self, draw: nannou::Draw) {
         // call nannou drawing function here
-        draw.ellipse()
-            .x_y(self.position.x, self.position.y)
-            .radius(self.radius)
-            .color(DEFAULT_FILL_COLOR)
-            .stroke_color(DEFAULT_STROKE_COLOR)
-            .stroke_weight(DEFAULT_STROKE_WEIGHT);
+        // draw.ellipse()
+        //     .x_y(self.position.x, self.position.y)
+        //     .radius(self.radius)
+        //     .color(DEFAULT_FILL_COLOR)
+        //     .stroke_color(DEFAULT_STROKE_COLOR)
+        //     .stroke_weight(DEFAULT_STROKE_WEIGHT);
+
+        let mut builder = Path::builder();
+        let sweep_angle = Angle::radians(PI * 2.0);
+        let x_rotation = Angle::radians(0.0);
+        let center = point(self.position.x, self.position.y);
+        let start = point(self.position.x + self.radius, self.position.y);
+        let radii = Vector::new(self.radius, self.radius);
+        builder.move_to(start);
+        builder.arc(center, radii, sweep_angle, x_rotation);
+        let path = builder.build();
+
+        draw.path()
+            .stroke()
+            .color(DEFAULT_STROKE_COLOR)
+            .stroke_weight(DEFAULT_STROKE_WEIGHT)
+            .events(&path);
+        draw.path().fill().color(DEFAULT_FILL_COLOR).events(&path);
     }
 }
 
@@ -52,10 +72,10 @@ impl Draw for Circle {
 // }
 
 impl SetPosition for Circle {
-    fn position(&self) -> Point2 {
+    fn position(&self) -> Point {
         self.position
     }
-    fn set_position(&mut self, to: Point2) {
+    fn set_position(&mut self, to: Point) {
         self.position = to;
     }
 }

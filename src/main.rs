@@ -43,7 +43,7 @@ impl Construct for Scene {
         //     .rate_func(BOUNCE_OUT);
 
         let mut anims: Vec<TargetAction> = Vec::new();
-        for _ in 0..600 {
+        for _ in 0..6000 {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
 
