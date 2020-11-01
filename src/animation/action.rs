@@ -89,11 +89,11 @@ impl Action {
         match self {
             Action::Shift { from, by } => {
                 let ref to = *from + *by;
-                let now = object.position().interp(from, to, progress);
+                let now = from.interp(to, progress);
                 object.set_position(now);
             }
             Action::MoveTo { from, to } => {
-                let now = object.position().interp(from, to, progress);
+                let now = from.interp(to, progress);
                 object.set_position(now);
             }
             Action::ToEdge {
@@ -102,7 +102,7 @@ impl Action {
                 buffer: _,
                 direction: _,
             } => {
-                let now = object.position().interp(from, to, progress);
+                let now = from.interp(to, progress);
                 object.set_position(now);
             }
             // Action::ShowCreation=>{

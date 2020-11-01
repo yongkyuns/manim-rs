@@ -19,22 +19,22 @@ fn interp1(from: f32, to: f32, p: f32) -> f32 {
 }
 pub trait Interpolate {
     // Update current states based on from, to, and normalized progress.
-    fn interp_mut(&mut self, from: &Self, to: &Self, progress: f32)
+    fn interp_mut(&mut self, other: &Self, progress: f32)
     where
         Self: Sized;
-    fn interp(&self, from: &Self, to: &Self, progress: f32) -> Self
+    fn interp(&self, other: &Self, progress: f32) -> Self
     where
         Self: Sized;
 }
 
 impl Interpolate for Point {
-    fn interp_mut(&mut self, from: &Self, to: &Self, progress: f32) {
-        self.x = interp1(from.x, to.x, progress);
-        self.y = interp1(from.y, to.y, progress);
+    fn interp_mut(&mut self, other: &Self, progress: f32) {
+        self.x = interp1(self.x, other.x, progress);
+        self.y = interp1(self.y, other.y, progress);
     }
-    fn interp(&self, from: &Self, to: &Self, progress: f32) -> Self {
-        let x = interp1(from.x, to.x, progress);
-        let y = interp1(from.y, to.y, progress);
+    fn interp(&self, other: &Self, progress: f32) -> Self {
+        let x = interp1(self.x, other.x, progress);
+        let y = interp1(self.y, other.y, progress);
         point(x, y)
     }
 }
