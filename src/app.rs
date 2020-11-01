@@ -33,7 +33,6 @@ fn view(app: &App, scene: &Scene, frame: Frame) {
     draw.background().color(BLACK);
 
     let win_rect = app.main_window().rect().pad_left(20.0);
-    // let text = text("woijefoijaoiwjeofijoaiwejfoaijweofijaoiwejfoj woijfoweijf ow fijaoweij@owoijfoaijeofijaoweifjoaiwejfoaiejfoaiejfoaijwoefjwfi").font_size(30).left_justify().build(win_rect);
     let text = text("Hello!").font_size(128).left_justify().build(win_rect);
     let mut builder = Path::builder();
     for e in text.path_events() {

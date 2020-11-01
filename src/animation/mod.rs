@@ -11,10 +11,10 @@ pub mod action;
 pub mod builder;
 pub mod command;
 
-use nannou::geom::{Point2, Vector2};
+// use nannou::geom::{Point2, Vector2};
+use nannou::lyon::math::{point, Point, Vector};
 
 fn interp1(from: f32, to: f32, p: f32) -> f32 {
-    // from + (to - from) * p
     from * (1.0 - p) + to * (p)
 }
 pub trait Interpolate {
@@ -27,16 +27,15 @@ pub trait Interpolate {
         Self: Sized;
 }
 
-impl Interpolate for Point2 {
+impl Interpolate for Point {
     fn interp_mut(&mut self, from: &Self, to: &Self, progress: f32) {
         self.x = interp1(from.x, to.x, progress);
         self.y = interp1(from.y, to.y, progress);
     }
     fn interp(&self, from: &Self, to: &Self, progress: f32) -> Self {
-        Self {
-            x: interp1(from.x, to.x, progress),
-            y: interp1(from.y, to.y, progress),
-        }
+        let x = interp1(from.x, to.x, progress);
+        let y = interp1(from.y, to.y, progress);
+        point(x, y)
     }
 }
 
@@ -67,14 +66,14 @@ impl Drop for TargetAction {
 }
 
 pub trait SetPosition {
-    fn position(&self) -> Point2;
-    fn set_position(&mut self, to: Point2);
+    fn position(&self) -> Point;
+    fn set_position(&mut self, to: Point);
 }
 
 pub trait Animate: SetPosition {
-    fn shift(&self, by: Vector2) -> TargetAction;
-    fn move_to(&self, to: Point2) -> TargetAction;
-    fn to_edge(&self, edge: Vector2) -> TargetAction;
+    fn shift(&self, by: Vector) -> TargetAction;
+    fn move_to(&self, to: Point) -> TargetAction;
+    fn to_edge(&self, edge: Vector) -> TargetAction;
 }
 
 #[derive(Debug, PartialEq)]

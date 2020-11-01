@@ -16,7 +16,8 @@ use consts::*;
 use object::circle::circle;
 use scene::{Construct, Scene};
 
-use nannou::geom::Point2;
+// use nannou::geom::Point2;
+use nannou::lyon::math::point;
 use nannou::rand::random_range;
 
 fn main() {
@@ -43,12 +44,12 @@ impl Construct for Scene {
         //     .rate_func(BOUNCE_OUT);
 
         let mut anims: Vec<TargetAction> = Vec::new();
-        for _ in 0..6000 {
+        for _ in 0..600 {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
 
             let c = circle();
-            c.move_to(Point2 { x, y });
+            c.move_to(point(x, y));
             self.add(c.clone());
             // anims.push(c.move_to(ORIGIN));
             anims.push(c.to_edge(LEFT));

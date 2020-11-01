@@ -6,7 +6,8 @@ use crate::consts::*;
 use crate::draw::Draw;
 
 use nannou;
-use nannou::geom::{Point2, Vector2};
+// use nannou::geom::{Point, Vector};
+use nannou::lyon::math::{point, Point, Vector};
 
 use self::circle::Circle;
 
@@ -21,14 +22,14 @@ pub enum Object {
     None,
 }
 impl SetPosition for Object {
-    fn position(&self) -> Point2 {
+    fn position(&self) -> Point {
         if let Object::Circle(c) = self {
             c.position
         } else {
-            Point2 { x: 0.0, y: 0.0 }
+            point(0.0, 0.0)
         }
     }
-    fn set_position(&mut self, to: Point2) {
+    fn set_position(&mut self, to: Point) {
         match self {
             Object::Circle(c) => c.set_position(to),
             _ => (),
@@ -49,7 +50,7 @@ impl Animate for RefObject {
     // Builder allows chaining of commands for specifying animation properties
     // Builder generates Animation on drop
     // Animation::new(self.clone(), Action::Shift(by))
-    fn shift(&self, by: Vector2) -> TargetAction {
+    fn shift(&self, by: Vector) -> TargetAction {
         TargetAction::new(
             self.clone(),
             Action::Shift {
@@ -59,7 +60,7 @@ impl Animate for RefObject {
             true,
         )
     }
-    fn move_to(&self, to: Point2) -> TargetAction {
+    fn move_to(&self, to: Point) -> TargetAction {
         TargetAction::new(
             self.clone(),
             Action::MoveTo {
@@ -69,7 +70,7 @@ impl Animate for RefObject {
             true,
         )
     }
-    fn to_edge(&self, direction: Vector2) -> TargetAction {
+    fn to_edge(&self, direction: Vector) -> TargetAction {
         // Need to map direciton vector to internal enum
         // Direction vector is used to maintain consistency in API
         // Internally, enum makes it easier to compare
@@ -99,10 +100,10 @@ impl Animate for RefObject {
 }
 
 impl SetPosition for RefObject {
-    fn position(&self) -> Point2 {
+    fn position(&self) -> Point {
         SetPosition::position(&*self.clone().borrow_mut())
     }
-    fn set_position(&mut self, to: Point2) {
+    fn set_position(&mut self, to: Point) {
         self.borrow_mut().set_position(to);
     }
 }

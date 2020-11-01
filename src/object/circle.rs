@@ -6,7 +6,6 @@ use crate::draw::Draw;
 
 use nannou;
 // use nannou::color::named::*;
-// use nannou::geom::{pt2, Point2};
 use nannou::lyon::math::{point, Angle, Point, Vector};
 use nannou::lyon::path::Path;
 
@@ -49,7 +48,7 @@ impl Draw for Circle {
         let mut builder = Path::builder();
         let sweep_angle = Angle::radians(PI * 2.0);
         let x_rotation = Angle::radians(0.0);
-        let center = point(self.position.x, self.position.y);
+        let center = self.position;
         let start = point(self.position.x + self.radius, self.position.y);
         let radii = Vector::new(self.radius, self.radius);
         builder.move_to(start);
