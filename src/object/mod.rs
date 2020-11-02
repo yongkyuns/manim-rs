@@ -24,7 +24,7 @@ pub enum Object {
 impl SetPosition for Object {
     fn position(&self) -> Point {
         if let Object::Circle(c) = self {
-            c.position
+            c.position()
         } else {
             point(0.0, 0.0)
         }
@@ -40,7 +40,7 @@ impl SetPosition for Object {
 impl PathCompletion for Object {
     fn completion(&self) -> f32 {
         if let Object::Circle(c) = self {
-            c.path_completion
+            c.completion()
         } else {
             1.0
         }

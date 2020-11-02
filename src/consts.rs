@@ -1,6 +1,5 @@
 use crate::ease::EaseType;
 use nannou::color::Rgb;
-// use nannou::geom::Vector;
 use nannou::lyon::math::Vector;
 use std::marker::PhantomData;
 
@@ -27,12 +26,12 @@ pub const SMALL_BUFF: f32 = 0.1;
 pub const MED_SMALL_BUFF: f32 = 0.25;
 pub const LARGE_BUFF: f32 = 0.5;
 
-pub const DEFAULT_STROKE_WEIGHT: f32 = 1.0;
+pub const DEFAULT_STROKE_WEIGHT: f32 = 7.0;
 
 pub const DEFAULT_FILL_COLOR: Rgb = Rgb {
-    red: 1.0,
-    green: 1.0,
-    blue: 1.0,
+    red: 0.0,
+    green: 0.0,
+    blue: 0.0,
     standard: PhantomData,
 };
 pub const DEFAULT_STROKE_COLOR: Rgb = Rgb {

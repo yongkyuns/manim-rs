@@ -6,7 +6,7 @@ use crate::draw::Draw;
 use crate::path::GetPartial;
 
 use nannou;
-// use nannou::color::named::*;
+use nannou::color::{Rgb, Rgba};
 use nannou::lyon::math::{point, Angle, Point, Vector};
 use nannou::lyon::path::Path;
 
@@ -14,40 +14,31 @@ use std::cell::RefCell;
 use std::f32::consts::PI;
 use std::rc::Rc;
 
-// pub type RefCircle = Rc<RefCell<Circle>>;
 #[derive(Debug, PartialEq)]
 pub struct Circle {
-    pub position: Point,
-    pub radius: f32,
-    pub path_completion: f32,
+    radius: f32,
+    position: Point,
+    path_completion: f32,
+    color: Rgb,
+    stroke_color: Rgb,
+    alpha: f32,
 }
 
 impl Circle {
     fn new() -> Self {
         Circle {
-            position: point(0.0, 0.0),
             radius: 12.0,
+            position: point(0.0, 0.0),
             path_completion: 1.0,
+            color: DEFAULT_FILL_COLOR,
+            stroke_color: DEFAULT_STROKE_COLOR,
+            alpha: 1.0,
         }
     }
-    // fn draw(&self, draw: nannou::Draw) {
-    //     // call nannou drawing function here
-    //     draw.ellipse()
-    //         .x_y(self.position.x, self.position.y)
-    //         .radius(self.radius);
-    // }
 }
 
 impl Draw for Circle {
     fn draw(&self, draw: nannou::Draw) {
-        // call nannou drawing function here
-        // draw.ellipse()
-        //     .x_y(self.position.x, self.position.y)
-        //     .radius(self.radius)
-        //     .color(DEFAULT_FILL_COLOR)
-        //     .stroke_color(DEFAULT_STROKE_COLOR)
-        //     .stroke_weight(DEFAULT_STROKE_WEIGHT);
-
         let mut builder = Path::builder();
         let sweep_angle = Angle::radians(PI * 2.0);
         let x_rotation = Angle::radians(0.0);
@@ -59,20 +50,23 @@ impl Draw for Circle {
         let path = builder.build();
         let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
+        let color = Rgba {
+            color: self.color,
+            alpha: self.alpha,
+        };
+        let stroke_color = Rgba {
+            color: self.stroke_color,
+            alpha: self.alpha,
+        };
+
         draw.path()
             .stroke()
-            .color(DEFAULT_STROKE_COLOR)
+            .color(stroke_color)
             .stroke_weight(DEFAULT_STROKE_WEIGHT)
             .events(&path);
-        draw.path().fill().color(DEFAULT_FILL_COLOR).events(&path);
+        draw.path().fill().color(color).events(&path);
     }
 }
-
-// impl Animate for Circle {
-//     fn shift(&mut self, by: Vector2) -> Animation {
-//         Animation::new(&mut self.position, Action::Shift(by))
-//     }
-// }
 
 impl PathCompletion for Circle {
     fn completion(&self) -> f32 {
@@ -92,15 +86,6 @@ impl SetPosition for Circle {
     }
 }
 
-// pub fn circle() -> Circle {
-//     Circle::new()
-// }
-
 pub fn circle() -> RefObject {
     Rc::new(RefCell::new(Object::Circle(Circle::new())))
 }
-// impl Draw for RefCircle {
-//     fn draw(&self) {
-//         print!("Drawing within smart ptr circle")
-//     }
-// }
