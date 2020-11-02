@@ -70,10 +70,16 @@ pub trait SetPosition {
     fn set_position(&mut self, to: Point);
 }
 
-pub trait Animate: SetPosition {
+pub trait PathCompletion {
+    fn completion(&self) -> f32;
+    fn set_completion(&mut self, completion: f32);
+}
+
+pub trait Animate: SetPosition + PathCompletion {
     fn shift(&self, by: Vector) -> TargetAction;
     fn move_to(&self, to: Point) -> TargetAction;
     fn to_edge(&self, edge: Vector) -> TargetAction;
+    fn show_creation(&self) -> TargetAction;
 }
 
 #[derive(Debug, PartialEq)]
@@ -109,7 +115,11 @@ impl Animation {
     }
     // Set object to final state in animation
     pub fn finish(&mut self) {
-        self.status = Status::Complete;
+        if !(self.status == Status::Complete) {
+            let object = &mut self.object;
+            self.action.update(object, 1.0);
+            self.status = Status::Complete;
+        }
     }
     // Initialize animation state with current object state
     fn init(&mut self, resource: &Resource) {

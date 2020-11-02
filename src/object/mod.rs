@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::animation::{Action, Animate, Direction, SetPosition, TargetAction};
+use crate::animation::{Action, Animate, Direction, PathCompletion, SetPosition, TargetAction};
 use crate::consts::*;
 use crate::draw::Draw;
 
@@ -36,6 +36,23 @@ impl SetPosition for Object {
         }
     }
 }
+
+impl PathCompletion for Object {
+    fn completion(&self) -> f32 {
+        if let Object::Circle(c) = self {
+            c.path_completion
+        } else {
+            1.0
+        }
+    }
+    fn set_completion(&mut self, completion: f32) {
+        match self {
+            Object::Circle(c) => c.set_completion(completion),
+            _ => (),
+        }
+    }
+}
+
 impl Draw for Object {
     fn draw(&self, draw: nannou::Draw) {
         match self {
@@ -96,6 +113,18 @@ impl Animate for RefObject {
             },
             true,
         )
+    }
+    fn show_creation(&self) -> TargetAction {
+        TargetAction::new(self.clone(), Action::ShowCreation, true)
+    }
+}
+
+impl PathCompletion for RefObject {
+    fn completion(&self) -> f32 {
+        PathCompletion::completion(&*self.clone().borrow_mut())
+    }
+    fn set_completion(&mut self, completion: f32) {
+        self.borrow_mut().set_completion(completion);
     }
 }
 

@@ -54,7 +54,23 @@ impl Construct for Scene {
             // anims.push(c.move_to(ORIGIN));
             anims.push(c.to_edge(LEFT));
         }
-        self.play_many(anims).run_time(5.0).rate_func(BOUNCE_OUT);
+        self.play_many(anims).run_time(1.0).rate_func(BOUNCE_OUT);
+
+        let ca = circle();
+        ca.move_to(point(100.0, 100.0));
+        self.add(ca.clone());
+        self.play(ca.to_edge(DOWN)).rate_func(BOUNCE_OUT);
+
+        let c2 = circle();
+        self.add(c2.clone());
+        self.play(c2.show_creation());
+        self.wait(1.0);
+
+        self.play(ca.to_edge(UP)).rate_func(BOUNCE_OUT);
+
+        // let c2 = circle();
+        // self.add(c2.clone());
+        // self.play(c2.show_creation()).run_time(3.0);
 
         // self.play(c.shift(RIGHT * 100.0))
         //     .run_time(1.0)

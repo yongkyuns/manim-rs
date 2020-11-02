@@ -1,4 +1,4 @@
-use super::{Interpolate, SetPosition};
+use super::{Interpolate, PathCompletion, SetPosition};
 use crate::object::RefObject;
 use crate::scene::Resource;
 
@@ -105,9 +105,9 @@ impl Action {
                 let now = from.interp(to, progress);
                 object.set_position(now);
             }
-            // Action::ShowCreation=>{
-
-            // }
+            Action::ShowCreation => {
+                object.set_completion(progress);
+            }
             _ => (),
         }
     }

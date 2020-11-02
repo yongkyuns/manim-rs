@@ -88,12 +88,13 @@ impl Commands for Vec<TimedCommand> {
     }
 
     fn find_index(&self, time: f32) -> (f32, usize, usize) {
-        let idx_all = self.iter().rposition(|c| c.event_time <= time).unwrap();
-        let idx_non_anim = self
+        let idx_end = self.iter().rposition(|c| c.event_time <= time).unwrap();
+        let start_time = self[idx_end].event_time;
+        let idx_start = self
             .iter()
-            .rposition(|c| c.event_time <= time && c.inner.run_time() == 0.0)
-            .unwrap();
-        (self[idx_all].event_time, idx_non_anim, idx_all)
+            .position(|c| c.event_time == start_time && c.inner.run_time() > 0.0)
+            .unwrap_or(idx_end);
+        (start_time, idx_start, idx_end)
     }
 
     fn end_time(&self) -> f32 {
@@ -130,33 +131,39 @@ impl Commands for Vec<TimedCommand> {
 
     fn process(
         &mut self,
-        idx_start: usize,
+        idx_prev: usize,
         time: f32,
         objects: &mut Vec<RefObject>,
         resource: &Resource,
     ) -> usize {
-        let (t_begin, idx_static, idx_all) = self.find_index(time);
+        let (t_begin, idx_start, idx_end) = self.find_index(time);
         let dt = time - t_begin;
-        let stride = idx_all - idx_start;
 
-        if stride > 0 {
-            self.iter_mut()
-                .skip(idx_start + 1)
-                .take(stride)
-                .for_each(|c| {
-                    let cmd = &mut c.inner;
-                    match cmd {
-                        Command::Play(anim) => anim.update(dt, resource),
-                        Command::Add(object) => objects.push(object.clone()),
-                        _ => (),
-                    }
-                })
-        } else {
-            let cmd = &mut self[idx_start].inner;
-            if let Command::Play(anim) = cmd {
-                anim.update(dt, resource);
-            }
-        }
-        idx_static
+        // Finish animation, or add/remove objects
+        self.iter_mut()
+            .skip(idx_prev)
+            .take(idx_start - idx_prev)
+            .for_each(|c| {
+                let cmd = &mut c.inner;
+                match cmd {
+                    Command::Play(anim) => anim.finish(),
+                    Command::Add(object) => objects.push(object.clone()),
+                    _ => (),
+                }
+            });
+
+        // Update animation
+        self.iter_mut()
+            .skip(idx_start)
+            .take(idx_end - idx_start + 1)
+            .for_each(|c| {
+                let cmd = &mut c.inner;
+                match cmd {
+                    Command::Play(anim) => anim.update(dt, resource),
+                    _ => (),
+                }
+            });
+
+        idx_start
     }
 }

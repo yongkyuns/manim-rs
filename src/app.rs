@@ -49,7 +49,7 @@ fn view(app: &App, scene: &Scene, frame: Frame) {
     draw.path().stroke().color(ORANGE).events(&path2);
     // draw.path().fill().color(ORANGE).events(&path2);
 
-    draw.ellipse().resolution(10).radius(50.0);
+    // draw.ellipse().resolution(10).radius(50.0);
 
     // let pts = [Point::new(0.0, 0.0), Point::new(100.0, 100.0)];
     // let evts = FromPolyline::new(true, pts);
@@ -87,7 +87,7 @@ fn view(app: &App, scene: &Scene, frame: Frame) {
     // });
 
     scene.draw(draw.clone());
-    println!("{}", app.fps());
+    // println!("{}", app.fps());
     draw.to_frame(app, &frame).unwrap();
 }
 

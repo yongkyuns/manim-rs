@@ -34,43 +34,48 @@ pub trait GetPartial: MeasureLength {
 
 impl GetPartial for Path {
     fn upto(&self, ratio: f32, tolerance: f32) -> Path {
-        let full_length = self.approximate_length(tolerance);
-        let stop_at = ratio * full_length;
+        if ratio >= 1.0 {
+            self.clone()
+        } else {
+            let ratio = ratio.max(0.0);
+            let full_length = self.approximate_length(tolerance);
+            let stop_at = ratio * full_length;
 
-        let mut builder = Path::builder();
-        let mut length = 0.0;
+            let mut builder = Path::builder();
+            let mut length = 0.0;
 
-        for e in self.iter().flattened(tolerance) {
-            if length > stop_at {
-                break;
-            }
-            match e {
-                PathEvent::Begin { at } => {
-                    FlatPathBuilder::move_to(&mut builder, at);
+            for e in self.iter().flattened(tolerance) {
+                if length > stop_at {
+                    break;
                 }
-                PathEvent::Line { from, to } => {
-                    let seg_length = (to - from).length();
-                    let new_length = length + seg_length;
-                    if new_length > stop_at {
-                        let seg_ratio = 1.0 - (new_length - stop_at) / seg_length;
-                        FlatPathBuilder::line_to(&mut builder, from.lerp(to, seg_ratio));
-                        break;
-                    } else {
-                        length = new_length;
-                        FlatPathBuilder::line_to(&mut builder, to);
+                match e {
+                    PathEvent::Begin { at } => {
+                        FlatPathBuilder::move_to(&mut builder, at);
                     }
+                    PathEvent::Line { from, to } => {
+                        let seg_length = (to - from).length();
+                        let new_length = length + seg_length;
+                        if new_length > stop_at {
+                            let seg_ratio = 1.0 - (new_length - stop_at) / seg_length;
+                            FlatPathBuilder::line_to(&mut builder, from.lerp(to, seg_ratio));
+                            break;
+                        } else {
+                            length = new_length;
+                            FlatPathBuilder::line_to(&mut builder, to);
+                        }
+                    }
+                    PathEvent::End {
+                        last: _,
+                        first: _,
+                        close: _,
+                    } => {
+                        FlatPathBuilder::close(&mut builder);
+                    }
+                    _ => (),
                 }
-                PathEvent::End {
-                    last: _,
-                    first: _,
-                    close: _,
-                } => {
-                    FlatPathBuilder::close(&mut builder);
-                }
-                _ => (),
             }
+            builder.build()
         }
-        builder.build()
     }
 }
 #[cfg(test)]

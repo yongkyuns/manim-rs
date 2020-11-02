@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 use super::{Object, RefObject};
-use crate::animation::SetPosition;
+use crate::animation::{PathCompletion, SetPosition};
 use crate::consts::*;
 use crate::draw::Draw;
+use crate::path::GetPartial;
 
 use nannou;
 // use nannou::color::named::*;
@@ -18,13 +19,15 @@ use std::rc::Rc;
 pub struct Circle {
     pub position: Point,
     pub radius: f32,
+    pub path_completion: f32,
 }
 
 impl Circle {
     fn new() -> Self {
         Circle {
             position: point(0.0, 0.0),
-            radius: 2.0,
+            radius: 12.0,
+            path_completion: 1.0,
         }
     }
     // fn draw(&self, draw: nannou::Draw) {
@@ -54,6 +57,7 @@ impl Draw for Circle {
         builder.move_to(start);
         builder.arc(center, radii, sweep_angle, x_rotation);
         let path = builder.build();
+        let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
         draw.path()
             .stroke()
@@ -69,6 +73,15 @@ impl Draw for Circle {
 //         Animation::new(&mut self.position, Action::Shift(by))
 //     }
 // }
+
+impl PathCompletion for Circle {
+    fn completion(&self) -> f32 {
+        self.path_completion
+    }
+    fn set_completion(&mut self, completion: f32) {
+        self.path_completion = completion.max(0.0).min(1.0);
+    }
+}
 
 impl SetPosition for Circle {
     fn position(&self) -> Point {

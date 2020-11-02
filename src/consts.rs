@@ -4,6 +4,9 @@ use nannou::color::Rgb;
 use nannou::lyon::math::Vector;
 use std::marker::PhantomData;
 
+pub const DEFAULT_FLATTEN_TOLERANCE: f32 = 0.01;
+pub const DEFAULT_RUNTIME: f32 = 1.0;
+
 // Shorthand notation for directions
 pub const ORIGIN: Vector = Vector::new(0.0, 0.0);
 

@@ -1,11 +1,12 @@
 // #![allow(dead_code)]
+use crate::consts::DEFAULT_RUNTIME;
 use crate::ease::EaseType;
 use crate::scene::Scene;
 
 use super::Animation;
 use super::Commands;
 use super::Status;
-use super::TargetAction;
+use super::{Action, TargetAction};
 
 pub struct AnimBuilder<'a> {
     scene: &'a mut Scene,
@@ -16,11 +17,18 @@ pub struct AnimBuilder<'a> {
 
 impl<'a> AnimBuilder<'a> {
     pub fn new(scene: &'a mut Scene, target_actions: Vec<TargetAction>) -> Self {
+        let mut rate_func = EaseType::Linear;
+        for ta in target_actions.iter() {
+            if ta.action == Action::ShowCreation {
+                rate_func = EaseType::Quad;
+                break;
+            }
+        }
         AnimBuilder {
             scene,
             target_actions,
-            run_time: 1.0,
-            rate_func: EaseType::Linear,
+            run_time: DEFAULT_RUNTIME,
+            rate_func,
         }
     }
     pub fn run_time(mut self, duration: f32) -> Self {
