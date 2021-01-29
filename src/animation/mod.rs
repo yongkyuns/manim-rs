@@ -1,20 +1,18 @@
 // #![allow(dead_code)]
 pub use self::action::{Action, Direction};
 pub use self::builder::AnimBuilder;
-pub use self::command::{Command, CommandBuilder, Commands, TimedCommand};
+pub use self::command::{Command, RunCommand, TimedCommand, UserCommand};
 
+use crate::arena::{Id, Object};
 use crate::ease::EaseType;
-use crate::object::RefObject;
-use crate::scene::Resource;
+use crate::geom::{GetPosition, Point, Vector};
+use crate::scene::{Resource, Scene};
 
 pub mod action;
 pub mod builder;
 pub mod command;
 
-// use nannou::geom::{Point2, Vector2};
-use nannou::lyon::math::{point, Point, Vector};
-
-fn interp1(from: f32, to: f32, p: f32) -> f32 {
+pub fn lerp(from: f32, to: f32, p: f32) -> f32 {
     from * (1.0 - p) + to * (p)
 }
 pub trait Interpolate {
@@ -27,47 +25,32 @@ pub trait Interpolate {
         Self: Sized;
 }
 
-impl Interpolate for Point {
-    fn interp_mut(&mut self, other: &Self, progress: f32) {
-        self.x = interp1(self.x, other.x, progress);
-        self.y = interp1(self.y, other.y, progress);
-    }
-    fn interp(&self, other: &Self, progress: f32) -> Self {
-        let x = interp1(self.x, other.x, progress);
-        let y = interp1(self.y, other.y, progress);
-        point(x, y)
-    }
-}
-
+#[derive(Debug, PartialEq)]
 pub struct TargetAction {
-    pub target: RefObject,
+    pub target: Id,
     pub action: Action,
     pub finish_on_drop: bool,
 }
+
 impl TargetAction {
-    pub fn new(target: RefObject, action: Action, finish_on_drop: bool) -> Self {
+    pub fn new(target: Id, action: Action, finish_on_drop: bool) -> Self {
         Self {
             target,
             action,
             finish_on_drop,
         }
     }
-    pub fn finish(&mut self) {
-        self.action.complete(&mut self.target);
+    pub fn finish(&mut self, object: &mut Object, resource: &Resource) {
+        self.action.complete(object);
     }
 }
 
 impl Drop for TargetAction {
     fn drop(&mut self) {
         if self.finish_on_drop {
-            self.finish();
+            // self.finish();
         }
     }
-}
-
-pub trait SetPosition {
-    fn position(&self) -> Point;
-    fn set_position(&mut self, to: Point);
 }
 
 pub trait PathCompletion {
@@ -75,7 +58,10 @@ pub trait PathCompletion {
     fn set_completion(&mut self, completion: f32);
 }
 
-pub trait Animate: SetPosition + PathCompletion {
+/// Describes the action and target object.
+/// Returns `TargetAction` which can change object instantly, or
+/// Furuther gets converted to `Animation` which contains duration and interpolation function
+pub trait Animate {
     fn shift(&self, by: Vector) -> TargetAction;
     fn move_to(&self, to: Point) -> TargetAction;
     fn to_edge(&self, edge: Vector) -> TargetAction;
@@ -91,8 +77,7 @@ pub enum Status {
 
 #[derive(Debug, PartialEq)]
 pub struct Animation {
-    // pub property: &'a mut dyn Interpolate,
-    object: RefObject,
+    object: Id,
     action: Action,
     run_time: f32,
     rate_func: EaseType,
@@ -100,8 +85,7 @@ pub struct Animation {
 }
 
 impl Animation {
-    pub fn new(object: RefObject, action: Action) -> Self {
-        // pub fn new(property: Rc<RefCell<dyn Interpolate>>, action: Action) -> Self {
+    pub fn new(object: Id, action: Action) -> Self {
         let rate_func = EaseType::Linear;
         let run_time = 1.0;
         let status = Status::NotStarted;
@@ -114,16 +98,16 @@ impl Animation {
         }
     }
     // Set object to final state in animation
-    pub fn finish(&mut self) {
+    pub fn finish(&mut self, object: &mut Object, resource: &Resource) {
         if !(self.status == Status::Complete) {
-            let object = &mut self.object;
+            // let object = &mut self.object;
             self.action.update(object, 1.0);
             self.status = Status::Complete;
         }
     }
     // Initialize animation state with current object state
-    fn init(&mut self, resource: &Resource) {
-        self.action.init(&self.object, resource);
+    fn init(&mut self, object: &mut Object, resource: &Resource) {
+        self.action.init(object.position(), resource);
     }
     // Determine whether animation is complete
     pub fn is_complete(&self) -> bool {
@@ -134,21 +118,21 @@ impl Animation {
         }
     }
     // Update animation status and time
-    fn update_status(&mut self, t: f32, resource: &Resource) {
+    fn update_status(&mut self, object: &mut Object, t: f32, resource: &Resource) {
         if t > 0.0 {
             if self.status == Status::NotStarted {
-                self.action.init(&self.object, resource);
+                self.action.init(object.position(), resource);
             }
             self.status = Status::Animating(t / self.run_time);
         }
     }
     // Main update function for progressing through animation
-    pub fn update(&mut self, t: f32, resource: &Resource) {
+    pub fn update(&mut self, object: &mut Object, t: f32, resource: &Resource) {
         let t = t.min(self.run_time);
 
-        self.update_status(t, resource);
+        self.update_status(object, t, resource);
         let p = self.rate_func.calculate(t / self.run_time);
-        let object = &mut self.object;
+        // let object = &mut self.object;
 
         self.action.update(object, p);
     }
@@ -176,7 +160,7 @@ mod tests {
         };
 
         let mut scene = scene(win);
-        scene.add(c.clone());
+        scene.add(c);
         scene.wait(1.0);
         scene
             .play(c.shift(RIGHT * 100.0))

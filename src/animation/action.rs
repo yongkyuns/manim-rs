@@ -1,8 +1,7 @@
-use super::{Interpolate, PathCompletion, SetPosition};
-use crate::object::RefObject;
+use super::Interpolate;
+use crate::arena::Object;
+use crate::geom::{Point, SetPosition, Vector};
 use crate::scene::Resource;
-
-use nannou::lyon::math::{point, Point, Vector};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Direction {
@@ -46,72 +45,71 @@ pub enum Action {
     FadeOut,
     Transform,
 }
+
 impl Action {
-    pub fn init(&mut self, object: &RefObject, resource: &Resource) {
-        let pos = object.position();
+    pub fn init(&mut self, position: Point, resource: &Resource) {
         match self {
-            Action::Shift { from: _, by } => {
-                *self = Action::Shift { from: pos, by: *by };
+            Action::Shift {
+                ref mut from,
+                by: _,
+            } => {
+                *from = position;
             }
-            Action::MoveTo { from: _, to } => {
-                *self = Action::MoveTo { from: pos, to: *to };
+            Action::MoveTo {
+                ref mut from,
+                to: _,
+            } => {
+                *from = position;
             }
             Action::ToEdge {
-                from: _,
-                to: _,
+                ref mut from,
+                ref mut to,
                 buffer,
                 direction,
             } => {
-                let to_y = match direction {
-                    Direction::Up => resource.edge_upper() - *buffer,
-                    Direction::Down => resource.edge_lower() + *buffer,
-                    _ => pos.y,
+                let mut p = position;
+                match direction {
+                    Direction::Up => p.y = resource.edge_upper() - *buffer,
+                    Direction::Down => p.y = resource.edge_lower() + *buffer,
+                    Direction::Right => p.x = resource.edge_right() - *buffer,
+                    Direction::Left => p.x = resource.edge_left() + *buffer,
                 };
-                let to_x = match direction {
-                    Direction::Left => resource.edge_left() + *buffer,
-                    Direction::Right => resource.edge_right() - *buffer,
-                    _ => pos.x,
-                };
-                *self = Action::ToEdge {
-                    from: pos,
-                    to: point(to_x, to_y),
-                    buffer: *buffer,
-                    direction: *direction,
-                };
+                *from = position;
+                *to = p;
             }
-            // Action::Scale { from: _, to } => {
-            //     *self = Action::Scale { from: , to: *to };
-            // }
+            Action::ShowCreation => {
+                // object.set_completion(progress);
+            }
             _ => (),
-        }
+        };
     }
-    pub fn update(&self, object: &mut RefObject, progress: f32) {
+    pub fn update(&mut self, object: &mut Object, progress: f32) {
         match self {
-            Action::Shift { from, by } => {
+            Action::Shift { ref mut from, by } => {
                 let ref to = *from + *by;
                 let now = from.interp(to, progress);
-                object.set_position(now);
+                object.move_to(now.x, now.y);
             }
-            Action::MoveTo { from, to } => {
+            Action::MoveTo { ref mut from, to } => {
                 let now = from.interp(to, progress);
-                object.set_position(now);
+                object.move_to(now.x, now.y);
             }
             Action::ToEdge {
-                from,
-                to,
+                ref mut from,
+                ref mut to,
                 buffer: _,
                 direction: _,
             } => {
                 let now = from.interp(to, progress);
-                object.set_position(now);
+                object.move_to(now.x, now.y);
             }
             Action::ShowCreation => {
-                object.set_completion(progress);
+                // object.set_completion(progress);
             }
             _ => (),
-        }
+        };
     }
-    pub fn complete(&self, object: &mut RefObject) {
+    pub fn complete(&mut self, object: &mut Object) {
         self.update(object, 1.0);
     }
 }

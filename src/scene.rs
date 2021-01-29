@@ -1,6 +1,6 @@
-use crate::animation::{AnimBuilder, CommandBuilder, Commands, TargetAction, TimedCommand};
+use crate::animation::{AnimBuilder, RunCommand, TargetAction, TimedCommand, UserCommand};
+use crate::arena::{Arena, HasArena, Id, NodeArena, Object};
 use crate::draw::Draw;
-use crate::object::RefObject;
 
 use nannou;
 use nannou::geom::Rect;
@@ -9,6 +9,7 @@ use nannou::geom::Rect;
 pub struct Resource {
     window: Rect,
 }
+
 impl Resource {
     pub fn new(window: Rect) -> Self {
         Self { window }
@@ -30,60 +31,83 @@ impl Resource {
 /// Top-level struct that contains animation sequence and object information
 pub struct Scene {
     pub commands: Vec<TimedCommand>,
-    // pub objects: Vec<Box<dyn Draw>>,
-    // pub objects: Vec<&'a dyn Draw>,
-    // pub objects: Vec<Object>,
-    objects: Vec<RefObject>,
+    objects: Arena<Object>,
     prev_command: usize,
     resource: Resource,
-    // schedule: Schedule,
 }
 
 impl Scene {
     pub fn new(window: Rect) -> Self {
         let mut scene = Scene {
             commands: Vec::new(),
-            objects: Vec::new(),
+            objects: Arena::new(),
             prev_command: 0,
             resource: Resource::new(window),
-            // schedule: Schedule::new(),
         };
         scene.wait(0.0); // Put dummy command at the beginning
         scene
     }
 
-    pub fn play_many(&mut self, mut target_actions: Vec<TargetAction>) -> AnimBuilder {
-        target_actions
-            .iter_mut()
-            .for_each(|ta| ta.finish_on_drop = false);
+    pub fn play_many(&mut self, target_actions: Vec<TargetAction>) -> AnimBuilder {
+        // target_actions
+        //     .iter_mut()
+        //     .for_each(|ta| ta.finish_on_drop = false);
         AnimBuilder::new(self, target_actions)
     }
 
     pub fn update(&mut self, time: f32) {
-        let objects = &mut self.objects;
-        self.prev_command = self
-            .commands
-            .process(self.prev_command, time, objects, &self.resource);
+        self.prev_command =
+            self.commands
+                .process(self.prev_command, time, &mut self.objects, &self.resource);
     }
 
     pub fn draw(&self, nannou_draw: nannou::Draw) {
         // Draw objects in scene
-        self.objects
-            .iter()
-            .for_each(|obj| obj.draw(nannou_draw.clone()));
+        // self.objects
+        //     .iter()
+        //     .for_each(|obj| obj.draw(nannou_draw.clone()));
+        for (_idx, object) in &self.objects {
+            object.draw(nannou_draw.clone());
+        }
     }
 }
 
-impl CommandBuilder for Scene {
+impl UserCommand for Scene {
     fn play(&mut self, target_action: TargetAction) -> AnimBuilder {
         AnimBuilder::new(self, vec![target_action])
     }
-
+    fn act(&mut self, target_action: TargetAction) {
+        self.commands.act(target_action);
+    }
     fn wait(&mut self, time: f32) {
         self.commands.wait(time);
     }
-    fn add(&mut self, object: RefObject) {
-        self.commands.add(object);
+    fn new(&mut self, object: Object) -> Id {
+        self.objects.add(object) // Add object to graph
+                                 // self.commands.add(idx); // add new command
+    }
+    fn show(&mut self, object: Id) {
+        self.commands.show(object);
+    }
+    fn remove(&mut self, object: Id) {
+        self.objects.delete(object);
+    }
+}
+
+impl HasArena for Scene {
+    fn add(&mut self, object: Object) -> Id {
+        Id::new(self.objects.insert(object))
+    }
+    fn get_mut(&mut self, index: &Id) -> Option<&mut Object> {
+        self.objects.get_mut(index.0)
+    }
+    fn get(&self, index: &Id) -> Option<&Object> {
+        self.objects.get(index.0)
+    }
+    fn get_parent(&self, index: &Id) -> Option<&Object> {
+        self.objects
+            .get(index.0)
+            .and_then(|object| object.parent.and_then(|parent| self.objects.get(parent)))
     }
 }
 

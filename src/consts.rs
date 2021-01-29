@@ -1,26 +1,28 @@
 use crate::ease::EaseType;
+use crate::geom::Vector;
 use nannou::color::Rgb;
-use nannou::lyon::math::Vector;
+// use nannou::lyon::math::Vector;
 use std::marker::PhantomData;
 
 pub const DEFAULT_FLATTEN_TOLERANCE: f32 = 0.01;
 pub const DEFAULT_RUNTIME: f32 = 1.0;
 
 // Shorthand notation for directions
-pub const ORIGIN: Vector = Vector::new(0.0, 0.0);
+// pub const ORIGIN: Vector = Vector::new(0.0, 0.0);
+pub const ORIGIN: Vector = Vector { x: 0.0, y: 0.0 };
 
-pub const UP: Vector = Vector::new(0.0, 1.0);
-pub const DOWN: Vector = Vector::new(0.0, -1.0);
-pub const RIGHT: Vector = Vector::new(1.0, 0.0);
-pub const LEFT: Vector = Vector::new(-1.0, 0.0);
+pub const UP: Vector = Vector { x: 0.0, y: 1.0 };
+pub const DOWN: Vector = Vector { x: 0.0, y: -1.0 };
+pub const RIGHT: Vector = Vector { x: 1.0, y: 0.0 };
+pub const LEFT: Vector = Vector { x: -1.0, y: 0.0 };
 
-pub const UL: Vector = Vector::new(-1.0, 1.0);
-pub const UR: Vector = Vector::new(1.0, 1.0);
-pub const DL: Vector = Vector::new(-1.0, -1.0);
-pub const DR: Vector = Vector::new(1.0, -1.0);
+pub const UL: Vector = Vector { x: -1.0, y: 1.0 };
+pub const UR: Vector = Vector { x: 1.0, y: 1.0 };
+pub const DL: Vector = Vector { x: -1.0, y: -1.0 };
+pub const DR: Vector = Vector { x: 1.0, y: -1.0 };
 
-pub const X_AXIS: Vector = Vector::new(1.0, 0.0);
-pub const Y_AXIS: Vector = Vector::new(0.0, 1.0);
+pub const X_AXIS: Vector = Vector { x: 1.0, y: 0.0 };
+pub const Y_AXIS: Vector = Vector { x: 0.0, y: 1.0 };
 
 pub const SMALL_BUFF: f32 = 0.1;
 pub const MED_SMALL_BUFF: f32 = 0.25;

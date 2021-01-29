@@ -1,54 +1,51 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate::animation::{Action, Animate, Direction, PathCompletion, SetPosition, TargetAction};
-use crate::consts::*;
+use crate::animation::PathCompletion;
+use crate::appearance::Visibility;
 use crate::draw::Draw;
+use crate::geom::{GetPosition, Point, SetPosition};
 
 use nannou;
-// use nannou::geom::{Point, Vector};
-use nannou::lyon::math::{point, Point, Vector};
 
-use self::circle::Circle;
+pub use self::circle::Circle;
+pub use self::rectangle::Rectangle;
 
 pub mod circle;
+pub mod rectangle;
 
-/// Wrapper type around `Object` to retain ownership for user while
-/// `Object` is being used to construct `Scene`
-pub type RefObject = Rc<RefCell<Object>>;
 #[derive(Debug, PartialEq)]
 pub enum Object {
     Circle(Circle),
-    None,
+    Rectangle(Rectangle),
 }
+
 impl SetPosition for Object {
-    fn position(&self) -> Point {
-        if let Object::Circle(c) = self {
-            c.position()
-        } else {
-            point(0.0, 0.0)
+    fn position_mut(&mut self) -> &mut Point {
+        match self {
+            Object::Circle(c) => SetPosition::position_mut(c),
+            Object::Rectangle(r) => SetPosition::position_mut(r),
         }
     }
-    fn set_position(&mut self, to: Point) {
+}
+
+impl GetPosition for Object {
+    fn position(&self) -> Point {
         match self {
-            Object::Circle(c) => c.set_position(to),
-            _ => (),
+            Object::Circle(c) => GetPosition::position(c),
+            Object::Rectangle(r) => GetPosition::position(r),
         }
     }
 }
 
 impl PathCompletion for Object {
     fn completion(&self) -> f32 {
-        if let Object::Circle(c) = self {
-            c.completion()
-        } else {
-            1.0
+        match self {
+            Object::Circle(c) => c.completion(),
+            Object::Rectangle(r) => r.completion(),
         }
     }
     fn set_completion(&mut self, completion: f32) {
         match self {
             Object::Circle(c) => c.set_completion(completion),
-            _ => (),
+            Object::Rectangle(r) => r.set_completion(completion),
         }
     }
 }
@@ -57,88 +54,58 @@ impl Draw for Object {
     fn draw(&self, draw: nannou::Draw) {
         match self {
             Object::Circle(c) => c.draw(draw),
-            _ => (),
+            Object::Rectangle(r) => r.draw(draw),
         }
     }
 }
 
-impl Animate for RefObject {
-    // Create animation builder with given action, and return it
-    // Builder allows chaining of commands for specifying animation properties
-    // Builder generates Animation on drop
-    // Animation::new(self.clone(), Action::Shift(by))
-    fn shift(&self, by: Vector) -> TargetAction {
-        TargetAction::new(
-            self.clone(),
-            Action::Shift {
-                from: self.position(),
-                by,
-            },
-            true,
-        )
-    }
-    fn move_to(&self, to: Point) -> TargetAction {
-        TargetAction::new(
-            self.clone(),
-            Action::MoveTo {
-                from: self.position(),
-                to,
-            },
-            true,
-        )
-    }
-    fn to_edge(&self, direction: Vector) -> TargetAction {
-        // Need to map direciton vector to internal enum
-        // Direction vector is used to maintain consistency in API
-        // Internally, enum makes it easier to compare
-        let dir_enum: Direction;
-        if direction == UP {
-            dir_enum = Direction::Up;
-        } else if direction == DOWN {
-            dir_enum = Direction::Down;
-        } else if direction == LEFT {
-            dir_enum = Direction::Left;
-        } else if direction == RIGHT {
-            dir_enum = Direction::Right;
-        } else {
-            panic!("Invalid direction specified!! Direction must be one of UP/DOWN/LEFT/RIGHT");
+impl Visibility for Object {
+    fn visible_mut(&mut self) -> &mut bool {
+        match self {
+            Object::Circle(c) => Visibility::visible_mut(c),
+            Object::Rectangle(r) => Visibility::visible_mut(r),
         }
-        TargetAction::new(
-            self.clone(),
-            Action::ToEdge {
-                from: self.position(),
-                to: self.position(), // TODO: Fix this later
-                buffer: MED_SMALL_BUFF,
-                direction: dir_enum,
-            },
-            true,
-        )
     }
-    fn show_creation(&self) -> TargetAction {
-        TargetAction::new(self.clone(), Action::ShowCreation, true)
+    fn is_visible(&self) -> bool {
+        match self {
+            Object::Circle(c) => c.is_visible(),
+            Object::Rectangle(r) => r.is_visible(),
+        }
     }
 }
 
-impl PathCompletion for RefObject {
-    fn completion(&self) -> f32 {
-        PathCompletion::completion(&*self.clone().borrow_mut())
-    }
-    fn set_completion(&mut self, completion: f32) {
-        self.borrow_mut().set_completion(completion);
+impl From<Circle> for Object {
+    fn from(c: Circle) -> Self {
+        Object::Circle(c)
     }
 }
 
-impl SetPosition for RefObject {
-    fn position(&self) -> Point {
-        SetPosition::position(&*self.clone().borrow_mut())
-    }
-    fn set_position(&mut self, to: Point) {
-        self.borrow_mut().set_position(to);
+impl From<Rectangle> for Object {
+    fn from(r: Rectangle) -> Self {
+        Object::Rectangle(r)
     }
 }
 
-impl Draw for RefObject {
-    fn draw(&self, draw: nannou::Draw) {
-        self.borrow().draw(draw);
-    }
-}
+// impl PathCompletion for NodeIndex {
+//     fn completion(&self) -> f32 {
+//         PathCompletion::completion(&*self.clone().borrow_mut())
+//     }
+//     fn set_completion(&mut self, completion: f32) {
+//         self.borrow_mut().set_completion(completion);
+//     }
+// }
+
+// impl SetPosition for NodeIndex {
+//     fn position(&self) -> Point {
+//         SetPosition::position(&*self.clone().borrow_mut())
+//     }
+//     fn set_position(&mut self, to: Point) {
+//         self.borrow_mut().set_position(to);
+//     }
+// }
+
+// impl Draw for NodeIndex {
+//     fn draw(&self, draw: nannou::Draw) {
+//         self.borrow().draw(draw);
+//     }
+// }

@@ -10,3 +10,4 @@ edition = "2018"
 nannou="0.14"
 cgmath = { version = "0.17", features = ["serde"] }
 pennereq = "0.3"
+generational-arena="0.2"

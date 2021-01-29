@@ -4,7 +4,7 @@ use crate::ease::EaseType;
 use crate::scene::Scene;
 
 use super::Animation;
-use super::Commands;
+use super::RunCommand;
 use super::Status;
 use super::{Action, TargetAction};
 

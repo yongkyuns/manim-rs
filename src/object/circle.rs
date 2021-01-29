@@ -1,38 +1,41 @@
-#![allow(dead_code)]
-use super::{Object, RefObject};
-use crate::animation::{PathCompletion, SetPosition};
+use crate::animation::PathCompletion;
+use crate::appearance::Visibility;
+use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
+use crate::geom;
+use crate::geom::{point_at, GetPosition, SetPosition};
 use crate::path::GetPartial;
 
 use nannou;
 use nannou::color::{Rgb, Rgba};
-use nannou::lyon::math::{point, Angle, Point, Vector};
+use nannou::lyon::math as lyon;
+use nannou::lyon::math::{point, Angle, Vector};
 use nannou::lyon::path::Path;
 
-use std::cell::RefCell;
 use std::f32::consts::PI;
-use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]
 pub struct Circle {
     radius: f32,
-    position: Point,
+    position: geom::Point,
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
     alpha: f32,
+    visible: bool,
 }
 
 impl Circle {
     fn new() -> Self {
         Circle {
             radius: 12.0,
-            position: point(0.0, 0.0),
+            position: point_at(0.0, 0.0),
             path_completion: 1.0,
             color: DEFAULT_FILL_COLOR,
             stroke_color: DEFAULT_STROKE_COLOR,
             alpha: 1.0,
+            visible: false,
         }
     }
 }
@@ -42,11 +45,13 @@ impl Draw for Circle {
         let mut builder = Path::builder();
         let sweep_angle = Angle::radians(PI * 2.0);
         let x_rotation = Angle::radians(0.0);
-        let center = self.position;
+        let center: lyon::Point = self.position.into();
         let start = point(self.position.x + self.radius, self.position.y);
         let radii = Vector::new(self.radius, self.radius);
+
         builder.move_to(start);
         builder.arc(center, radii, sweep_angle, x_rotation);
+
         let path = builder.build();
         let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
@@ -78,14 +83,26 @@ impl PathCompletion for Circle {
 }
 
 impl SetPosition for Circle {
-    fn position(&self) -> Point {
-        self.position
-    }
-    fn set_position(&mut self, to: Point) {
-        self.position = to;
+    fn position_mut(&mut self) -> &mut geom::Point {
+        SetPosition::position_mut(&mut self.position)
     }
 }
 
-pub fn circle() -> RefObject {
-    Rc::new(RefCell::new(Object::Circle(Circle::new())))
+impl GetPosition for Circle {
+    fn position(&self) -> geom::Point {
+        GetPosition::position(&self.position)
+    }
+}
+
+impl Visibility for Circle {
+    fn visible_mut(&mut self) -> &mut bool {
+        &mut self.visible
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
+}
+
+pub fn circle() -> Object {
+    Object::new(Circle::new().into())
 }
