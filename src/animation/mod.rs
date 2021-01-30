@@ -6,7 +6,7 @@ pub use self::command::{Command, RunCommand, TimedCommand, UserCommand};
 use crate::arena::{Id, Object};
 use crate::ease::EaseType;
 use crate::geom::{GetPosition, Point, Vector};
-use crate::scene::{Resource, Scene};
+use crate::scene::Resource;
 
 pub mod action;
 pub mod builder;
@@ -40,7 +40,7 @@ impl TargetAction {
             finish_on_drop,
         }
     }
-    pub fn finish(&mut self, object: &mut Object, resource: &Resource) {
+    pub fn finish(&mut self, object: &mut Object) {
         self.action.complete(object);
     }
 }
@@ -98,7 +98,7 @@ impl Animation {
         }
     }
     // Set object to final state in animation
-    pub fn finish(&mut self, object: &mut Object, resource: &Resource) {
+    pub fn finish(&mut self, object: &mut Object) {
         if !(self.status == Status::Complete) {
             // let object = &mut self.object;
             self.action.update(object, 1.0);
@@ -107,7 +107,7 @@ impl Animation {
     }
     // Initialize animation state with current object state
     fn init(&mut self, object: &mut Object, resource: &Resource) {
-        self.action.init(object.position(), resource);
+        self.action.init(object, resource);
     }
     // Determine whether animation is complete
     pub fn is_complete(&self) -> bool {
@@ -121,7 +121,7 @@ impl Animation {
     fn update_status(&mut self, object: &mut Object, t: f32, resource: &Resource) {
         if t > 0.0 {
             if self.status == Status::NotStarted {
-                self.action.init(object.position(), resource);
+                self.action.init(object, resource);
             }
             self.status = Status::Animating(t / self.run_time);
         }

@@ -80,20 +80,6 @@ impl RunCommand for Vec<TimedCommand> {
     }
 
     fn time_stamps(&self) -> Vec<f32> {
-        // let mut stamps: Vec<f32> = self
-        //     .run_times()
-        //     .iter()
-        //     .scan(0.0, |sum, &t| {
-        //         *sum = *sum + t;
-        //         Some(*sum)
-        //     })
-        //     .collect();
-        // // time-stamps need to be shifted one index to the right
-        // // to mark the beginning of each animation, not end
-        // stamps.insert(0, 0.0);
-        // stamps.pop();
-        // stamps
-
         self.iter().map(|c| c.event_time).collect()
     }
     fn find_index(&self, time: f32) -> (f32, usize, usize) {
@@ -157,9 +143,7 @@ impl RunCommand for Vec<TimedCommand> {
                 let cmd = &mut c.inner;
                 match cmd {
                     Command::Play(anim) => {
-                        objects
-                            .get_mut(anim.object.0)
-                            .map(|obj| anim.finish(obj, resource));
+                        objects.get_mut(anim.object.0).map(|obj| anim.finish(obj));
                     }
                     Command::Act(ta) => {
                         objects

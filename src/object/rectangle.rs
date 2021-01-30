@@ -9,10 +9,8 @@ use crate::path::GetPartial;
 
 use nannou;
 use nannou::color::{Rgb, Rgba};
-use nannou::lyon::math::{point, Angle};
+use nannou::lyon::math::point;
 use nannou::lyon::path::Path;
-
-use std::f32::consts::PI;
 
 #[derive(Debug, PartialEq)]
 pub struct Rectangle {
@@ -29,11 +27,11 @@ pub struct Rectangle {
 impl Rectangle {
     fn new() -> Self {
         Rectangle {
-            width: 10.0,
-            height: 10.0,
+            width: 30.0,
+            height: 30.0,
             position: geom::point(),
             path_completion: 1.0,
-            color: DEFAULT_FILL_COLOR,
+            color: RED_D,
             stroke_color: DEFAULT_STROKE_COLOR,
             alpha: 1.0,
             visible: false,
@@ -54,6 +52,7 @@ impl Draw for Rectangle {
             builder.line_to(point(start.x + self.width, start.y - self.height));
             builder.line_to(point(start.x, start.y - self.height));
             builder.line_to(point(start.x, start.y));
+            builder.close();
             let path = builder.build();
             let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 

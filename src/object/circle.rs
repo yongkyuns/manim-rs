@@ -42,34 +42,37 @@ impl Circle {
 
 impl Draw for Circle {
     fn draw(&self, draw: nannou::Draw) {
-        let mut builder = Path::builder();
-        let sweep_angle = Angle::radians(PI * 2.0);
-        let x_rotation = Angle::radians(0.0);
-        let center: lyon::Point = self.position.into();
-        let start = point(self.position.x + self.radius, self.position.y);
-        let radii = Vector::new(self.radius, self.radius);
+        if self.visible {
+            let mut builder = Path::builder();
+            let sweep_angle = Angle::radians(PI * 2.0);
+            let x_rotation = Angle::radians(0.0);
+            let center: lyon::Point = self.position.into();
+            let start = point(self.position.x + self.radius, self.position.y);
+            let radii = Vector::new(self.radius, self.radius);
 
-        builder.move_to(start);
-        builder.arc(center, radii, sweep_angle, x_rotation);
+            builder.move_to(start);
+            builder.arc(center, radii, sweep_angle, x_rotation);
+            builder.close();
 
-        let path = builder.build();
-        let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
+            let path = builder.build();
+            let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
-        let color = Rgba {
-            color: self.color,
-            alpha: self.alpha,
-        };
-        let stroke_color = Rgba {
-            color: self.stroke_color,
-            alpha: self.alpha,
-        };
+            let color = Rgba {
+                color: self.color,
+                alpha: self.alpha,
+            };
+            let stroke_color = Rgba {
+                color: self.stroke_color,
+                alpha: self.alpha,
+            };
 
-        draw.path()
-            .stroke()
-            .color(stroke_color)
-            .stroke_weight(DEFAULT_STROKE_WEIGHT)
-            .events(&path);
-        draw.path().fill().color(color).events(&path);
+            draw.path()
+                .stroke()
+                .color(stroke_color)
+                .stroke_weight(DEFAULT_STROKE_WEIGHT)
+                .events(&path);
+            draw.path().fill().color(color).events(&path);
+        }
     }
 }
 

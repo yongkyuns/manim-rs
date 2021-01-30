@@ -49,7 +49,7 @@ impl Construct for Scene {
         //     .rate_func(BOUNCE_OUT);
 
         let mut anims: Vec<TargetAction> = Vec::new();
-        for _ in 0..6000 {
+        for _ in 0..600 {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
 
@@ -60,23 +60,25 @@ impl Construct for Scene {
             // anims.push(c.move_to(ORIGIN));
             anims.push(c.to_edge(LEFT));
         }
+        self.wait(1.0);
         self.play_many(anims).run_time(1.0).rate_func(BOUNCE_OUT);
 
-        let circle = self.new(circle());
-        // ca.move_to(self, point_at(100.0, 100.0));
-        self.act(circle.move_to(point_at(100.0, 100.0)));
-        self.play(circle.to_edge(DOWN)).rate_func(BOUNCE_OUT);
+        // let c2 = self.new(circle());
+        // self.act(c2.move_to(point_at(100.0, 100.0)));
+        // self.play(c2.to_edge(DOWN)).rate_func(BOUNCE_OUT);
 
-        // let c2 = circle();
-        // self.add(c2.clone());
-        // self.play(c2.show_creation());
-        self.wait(1.0);
+        // self.wait(1.0);
 
-        let rect = self.new(rectangle());
-        self.show(rect);
-        self.play(rect.move_to(point_at(-100.0, -100.0)));
+        // let rect = self.new(rectangle());
+        // self.show(rect);
+        // self.play(rect.move_to(point_at(-100.0, -100.0)));
 
-        self.play(circle.to_edge(UP)).rate_func(BOUNCE_OUT);
+        // self.play(c2.to_edge(UP)).rate_func(BOUNCE_OUT);
+
+        let c3 = self.new(circle());
+        self.act(c3.move_to(point_at(200.0, 0.0)));
+        // self.show(c3);
+        self.play(c3.show_creation());
 
         // let c2 = circle();
         // self.add(c2.clone());

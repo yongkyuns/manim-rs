@@ -1,6 +1,8 @@
 use super::Interpolate;
+use crate::animation::PathCompletion;
+use crate::appearance::Visibility;
 use crate::arena::Object;
-use crate::geom::{Point, SetPosition, Vector};
+use crate::geom::{GetPosition, Point, SetPosition, Vector};
 use crate::scene::Resource;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -47,7 +49,8 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn init(&mut self, position: Point, resource: &Resource) {
+    pub fn init(&mut self, object: &mut Object, resource: &Resource) {
+        let position = object.position();
         match self {
             Action::Shift {
                 ref mut from,
@@ -78,7 +81,8 @@ impl Action {
                 *to = p;
             }
             Action::ShowCreation => {
-                // object.set_completion(progress);
+                object.show();
+                object.set_completion(0.0);
             }
             _ => (),
         };
@@ -104,7 +108,7 @@ impl Action {
                 object.move_to(now.x, now.y);
             }
             Action::ShowCreation => {
-                // object.set_completion(progress);
+                object.set_completion(progress);
             }
             _ => (),
         };

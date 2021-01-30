@@ -1,5 +1,5 @@
 use super::{Arena, HasArena};
-use crate::animation::{Action, Animate, Direction, TargetAction};
+use crate::animation::{Action, Animate, Direction, PathCompletion, TargetAction};
 use crate::appearance::Visibility;
 use crate::consts::*;
 use crate::draw::Draw;
@@ -61,6 +61,15 @@ impl Visibility for Node {
     }
     fn is_visible(&self) -> bool {
         Visibility::is_visible(&self.inner)
+    }
+}
+
+impl PathCompletion for Node {
+    fn completion(&self) -> f32 {
+        PathCompletion::completion(&self.inner)
+    }
+    fn set_completion(&mut self, completion: f32) {
+        PathCompletion::set_completion(&mut self.inner, completion);
     }
 }
 
