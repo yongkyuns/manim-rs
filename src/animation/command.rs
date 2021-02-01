@@ -1,6 +1,6 @@
 use super::{AnimBuilder, Animation, TargetAction};
 use crate::appearance::Visibility;
-use crate::arena::{Arena, Id, Object};
+use crate::arena::{Arena, Id, Index, Object};
 use crate::scene::Resource;
 
 /// Types of commands available. Vector of `TimedCommand` constructs the
@@ -39,9 +39,13 @@ pub trait UserCommand {
     fn play(&mut self, target_action: TargetAction) -> AnimBuilder;
     fn act(&mut self, target_action: TargetAction);
     fn wait(&mut self, time: f32);
-    fn new(&mut self, object: Object) -> Id;
-    fn show(&mut self, id: Id);
-    fn remove(&mut self, id: Id);
+    // fn new(&mut self, object: Object) -> Id;
+    fn show<T>(&mut self, id: T)
+    where
+        T: Into<Index> + Sized + Copy;
+    fn remove<T>(&mut self, id: T)
+    where
+        T: Into<Index> + Sized + Copy;
 }
 
 #[derive(Debug, PartialEq)]

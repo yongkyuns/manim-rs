@@ -14,12 +14,11 @@ mod path;
 mod scene;
 mod walk;
 
-use animation::{Animate, TargetAction, UserCommand};
+use animation::{Actionable, TargetAction, UserCommand};
 use consts::*;
 use geom::point_at;
 // use nannou::draw::primitive::rect;
-use object::circle::circle;
-use object::rectangle::rectangle;
+use arena::AddObject;
 use scene::{Construct, Scene};
 
 // use nannou::geom::Point2;
@@ -53,7 +52,7 @@ impl Construct for Scene {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
 
-            let c = self.new(circle());
+            let c = self.circle();
             self.show(c);
             // self.act(c.move_to(point_at(100.0, 0.0)));
             self.act(c.move_to(point_at(x, y)));
@@ -75,10 +74,15 @@ impl Construct for Scene {
 
         // self.play(c2.to_edge(UP)).rate_func(BOUNCE_OUT);
 
-        let c3 = self.new(circle());
+        // let c3 = self.new(circle());
+        let c3 = self.circle();
+        let r3 = self.rectangle();
         self.act(c3.move_to(point_at(200.0, 0.0)));
+        self.act(r3.move_to(point_at(200.0, 100.0)));
+        // self.show(r3);
         // self.show(c3);
         self.play(c3.show_creation());
+        self.play(r3.show_creation());
 
         // let c2 = circle();
         // self.add(c2.clone());

@@ -1,6 +1,9 @@
 use crate::animation::{AnimBuilder, RunCommand, TargetAction, TimedCommand, UserCommand};
-use crate::arena::{Arena, HasArena, Id, NodeArena, Object};
+use crate::arena::{AddObject, Arena, CircleId, HasArena, Id, Index};
+use crate::arena::{NodeArena, NodeIndex, Object, RectangleId};
 use crate::draw::Draw;
+use crate::object::circle::circle;
+use crate::object::rectangle::rectangle;
 
 use nannou;
 use nannou::geom::Rect;
@@ -33,6 +36,7 @@ pub struct Scene {
     pub commands: Vec<TimedCommand>,
     objects: Arena<Object>,
     prev_command: usize,
+    // iter: Iter<TimedCommand>,
     resource: Resource,
 }
 
@@ -82,16 +86,24 @@ impl UserCommand for Scene {
     fn wait(&mut self, time: f32) {
         self.commands.wait(time);
     }
-    fn new(&mut self, object: Object) -> Id {
-        self.objects.add(object) // Add object to graph
-                                 // self.commands.add(idx); // add new command
+    fn show<T>(&mut self, object: T)
+    where
+        T: Into<Index> + Sized + Copy,
+    {
+        let id: Index = object.into();
+        self.commands.show(NodeIndex(id));
     }
-    fn show(&mut self, object: Id) {
-        self.commands.show(object);
+    fn remove<T>(&mut self, object: T)
+    where
+        T: Into<Index> + Sized + Copy,
+    {
+        let id: Index = object.into();
+        self.objects.delete(NodeIndex(id));
     }
-    fn remove(&mut self, object: Id) {
-        self.objects.delete(object);
-    }
+    // fn new(&mut self, object: Object) -> Id {
+    //     self.objects.add(object) // Add object to graph
+    //                              // self.commands.add(idx); // add new command
+    // }
 }
 
 impl HasArena for Scene {
@@ -108,6 +120,17 @@ impl HasArena for Scene {
         self.objects
             .get(index.0)
             .and_then(|object| object.parent.and_then(|parent| self.objects.get(parent)))
+    }
+}
+
+impl AddObject for Scene {
+    fn circle(&mut self) -> CircleId {
+        let index = self.objects.add(circle());
+        CircleId(index.0)
+    }
+    fn rectangle(&mut self) -> RectangleId {
+        let index = self.objects.add(rectangle());
+        RectangleId(index.0)
     }
 }
 

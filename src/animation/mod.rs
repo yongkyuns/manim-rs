@@ -1,11 +1,10 @@
 // #![allow(dead_code)]
-pub use self::action::{Action, Direction};
+pub use self::action::{Action, Actionable, Direction};
 pub use self::builder::AnimBuilder;
 pub use self::command::{Command, RunCommand, TimedCommand, UserCommand};
 
 use crate::arena::{Id, Object};
 use crate::ease::EaseType;
-use crate::geom::{GetPosition, Point, Vector};
 use crate::scene::Resource;
 
 pub mod action;
@@ -56,16 +55,6 @@ impl Drop for TargetAction {
 pub trait PathCompletion {
     fn completion(&self) -> f32;
     fn set_completion(&mut self, completion: f32);
-}
-
-/// Describes the action and target object.
-/// Returns `TargetAction` which can change object instantly, or
-/// Furuther gets converted to `Animation` which contains duration and interpolation function
-pub trait Animate {
-    fn shift(&self, by: Vector) -> TargetAction;
-    fn move_to(&self, to: Point) -> TargetAction;
-    fn to_edge(&self, edge: Vector) -> TargetAction;
-    fn show_creation(&self) -> TargetAction;
 }
 
 #[derive(Debug, PartialEq)]

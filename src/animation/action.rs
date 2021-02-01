@@ -1,8 +1,9 @@
-use super::Interpolate;
+use super::{Interpolate, TargetAction};
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
-use crate::arena::Object;
-use crate::geom::{GetPosition, Point, SetPosition, Vector};
+use crate::arena::{Index, NodeIndex, Object};
+use crate::consts::*;
+use crate::geom::{point, GetPosition, Point, SetPosition, Vector};
 use crate::scene::Resource;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -11,6 +12,61 @@ pub enum Direction {
     Down,
     Left,
     Right,
+}
+/// Describes the action and target object.
+/// Returns `TargetAction` which can change object instantly, or
+/// Furuther gets converted to `Animation` which contains duration and interpolation function
+pub trait Actionable {
+    fn shift(&self, by: Vector) -> TargetAction;
+    fn move_to(&self, to: Point) -> TargetAction;
+    fn to_edge(&self, direction: Vector) -> TargetAction;
+    fn show_creation(&self) -> TargetAction;
+}
+
+impl<T> Actionable for T
+where
+    T: Into<Index> + Sized + Copy,
+{
+    fn shift(&self, by: Vector) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(NodeIndex(index), Action::Shift { from: point(), by }, true)
+    }
+    fn move_to(&self, to: Point) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(NodeIndex(index), Action::MoveTo { from: point(), to }, true)
+    }
+    fn to_edge(&self, direction: Vector) -> TargetAction {
+        // Need to map direciton vector to internal enum
+        // Direction vector is used to maintain consistency in API
+        // Internally, enum makes it easier to compare
+        let dir_enum: Direction;
+        if direction == UP {
+            dir_enum = Direction::Up;
+        } else if direction == DOWN {
+            dir_enum = Direction::Down;
+        } else if direction == LEFT {
+            dir_enum = Direction::Left;
+        } else if direction == RIGHT {
+            dir_enum = Direction::Right;
+        } else {
+            panic!("Invalid direction specified!! Direction must be one of UP/DOWN/LEFT/RIGHT");
+        }
+        let index: Index = T::into(*self);
+        TargetAction::new(
+            NodeIndex(index),
+            Action::ToEdge {
+                from: point(),
+                to: point(),
+                buffer: MED_SMALL_BUFF,
+                direction: dir_enum,
+            },
+            true,
+        )
+    }
+    fn show_creation(&self) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(NodeIndex(index), Action::ShowCreation, true)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
