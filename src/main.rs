@@ -77,12 +77,15 @@ impl Construct for Scene {
         // let c3 = self.new(circle());
         let c3 = self.circle();
         let r3 = self.rectangle();
-        self.act(c3.move_to(point_at(200.0, 0.0)));
+        self.act(c3.move_to(point_at(200.0, -100.0)));
         self.act(r3.move_to(point_at(200.0, 100.0)));
         // self.show(r3);
         // self.show(c3);
         self.play(c3.show_creation());
         self.play(r3.show_creation());
+        self.play(c3.set_radius(100.0)).rate_func(BOUNCE_OUT);
+        self.play(r3.set_height(100.0)).rate_func(QUAD);
+        self.play(r3.rotate_by(360.0 * 0.25)).rate_func(BOUNCE_OUT);
 
         // let c2 = circle();
         // self.add(c2.clone());

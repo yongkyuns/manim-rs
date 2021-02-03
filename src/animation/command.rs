@@ -34,6 +34,32 @@ impl Command {
             if !anim.is_complete() {} //TODO fix completion later
         }
     }
+    pub fn update(&mut self, dt: f32, objects: &mut Arena<Object>, resource: &Resource) {
+        match self {
+            Command::Play(anim) => {
+                objects
+                    .get_mut(anim.object.0)
+                    .map(|obj| anim.update(obj, dt, resource));
+            }
+            _ => (),
+        }
+    }
+    pub fn finish(&mut self, objects: &mut Arena<Object>) {
+        match self {
+            Command::Play(anim) => {
+                objects.get_mut(anim.object.0).map(|obj| anim.finish(obj));
+            }
+            Command::Act(ta) => {
+                objects
+                    .get_mut(ta.target.0)
+                    .map(|obj| ta.action.complete(obj));
+            }
+            Command::Show(id) => {
+                objects.get_mut(id.0).map(|obj| obj.show());
+            }
+            _ => (),
+        }
+    }
 }
 pub trait UserCommand {
     fn play(&mut self, target_action: TargetAction) -> AnimBuilder;
@@ -58,6 +84,34 @@ impl TimedCommand {
         self.inner.finish_if_needed();
     }
 }
+
+// impl IntoIterator for TimedCommand {
+//     type Item = TimedCommand;
+//     type IntoIter = TimedCmdIntoIterator;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         TimedCmdIntoIterator {
+//             command: self,
+//             index: 0,
+//         }
+//     }
+// }
+
+// pub struct TimedCmdIntoIterator {
+//     command: TimedCommand,
+//     index: usize,
+// }
+
+// impl Iterator for TimedCmdIntoIterator {
+//     type Item = TimedCommand;
+//     fn next(&mut self) -> Option<TimedCommand> {
+//         let result = match self.index {
+//             _ => return None,
+//         };
+//         self.index += 1;
+//         Some(result)
+//     }
+// }
 
 /// Executes commands and provides information
 pub trait RunCommand {
@@ -87,12 +141,15 @@ impl RunCommand for Vec<TimedCommand> {
         self.iter().map(|c| c.event_time).collect()
     }
     fn find_index(&self, time: f32) -> (f32, usize, usize) {
+        // Find the last command whose start time is less than now
         let idx_end = self.iter().rposition(|c| c.event_time <= time).unwrap();
+        // Get the start time of that command
         let start_time = self[idx_end].event_time;
+        // Get the first command whose run time is greater than zero
         let idx_start = self
             .iter()
             .position(|c| c.event_time == start_time && c.inner.run_time() > 0.0)
-            .unwrap_or(idx_end);
+            .unwrap_or(idx_end + 1);
         (start_time, idx_start, idx_end)
     }
     fn end_time(&self) -> f32 {
@@ -139,42 +196,25 @@ impl RunCommand for Vec<TimedCommand> {
         let (t_begin, idx_start, idx_end) = self.find_index(time);
         let dt = time - t_begin;
 
+        // dbg!(idx_prev);
+        // dbg!(idx_start);
+        // dbg!(idx_start - idx_prev);
+        // dbg!(idx_end - idx_start + 1);
+
         // Finish animation, or add/remove objects
         self.iter_mut()
             .skip(idx_prev)
             .take(idx_start - idx_prev)
-            .for_each(|c| {
-                let cmd = &mut c.inner;
-                match cmd {
-                    Command::Play(anim) => {
-                        objects.get_mut(anim.object.0).map(|obj| anim.finish(obj));
-                    }
-                    Command::Act(ta) => {
-                        objects
-                            .get_mut(ta.target.0)
-                            .map(|obj| ta.action.complete(obj));
-                    }
-                    Command::Show(id) => {
-                        objects.get_mut(id.0).map(|obj| obj.show());
-                    }
-                    _ => (),
-                }
+            .for_each(|ref mut cmd| {
+                cmd.inner.finish(objects);
             });
 
         // Update animation
         self.iter_mut()
             .skip(idx_start)
             .take(idx_end - idx_start + 1)
-            .for_each(|c| {
-                let cmd = &mut c.inner;
-                match cmd {
-                    Command::Play(anim) => {
-                        objects
-                            .get_mut(anim.object.0)
-                            .map(|obj| anim.update(obj, dt, resource));
-                    }
-                    _ => (),
-                }
+            .for_each(|ref mut cmd| {
+                cmd.inner.update(dt, objects, resource);
             });
 
         idx_start

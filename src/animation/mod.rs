@@ -24,6 +24,15 @@ pub trait Interpolate {
         Self: Sized;
 }
 
+impl Interpolate for f32 {
+    fn interp_mut(&mut self, other: &Self, progress: f32) {
+        *self = lerp(*self, *other, progress);
+    }
+    fn interp(&self, other: &Self, progress: f32) -> Self {
+        lerp(*self, *other, progress)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct TargetAction {
     pub target: Id,

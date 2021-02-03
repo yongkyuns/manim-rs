@@ -4,7 +4,7 @@ use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
 use crate::geom;
-use crate::geom::{GetPosition, SetPosition};
+use crate::geom::{GetOrientation, GetPosition, SetOrientation, SetPosition};
 use crate::path::GetPartial;
 
 use nannou;
@@ -15,8 +15,9 @@ use nannou::lyon::path::Path;
 #[derive(Debug, PartialEq)]
 pub struct Rectangle {
     position: geom::Point,
-    width: f32,
-    height: f32,
+    orientation: f32,
+    pub width: f32,
+    pub height: f32,
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
@@ -29,6 +30,7 @@ impl Rectangle {
         Rectangle {
             width: 30.0,
             height: 30.0,
+            orientation: 0.0,
             position: geom::point(),
             path_completion: 1.0,
             color: RED_D,
@@ -43,16 +45,19 @@ impl Draw for Rectangle {
     fn draw(&self, draw: nannou::Draw) {
         if self.visible {
             let mut builder = Path::builder();
-            let start = point(
-                self.position.x - self.width / 2.0,
-                self.position.y - self.height / 2.0,
-            );
+            // let start = point(
+            //     self.position.x - self.width / 2.0,
+            //     self.position.y + self.height / 2.0,
+            // );
+            let start = point(-self.width / 2.0, self.height / 2.0);
+
             builder.move_to(start);
             builder.line_to(point(start.x + self.width, start.y));
             builder.line_to(point(start.x + self.width, start.y - self.height));
             builder.line_to(point(start.x, start.y - self.height));
             builder.line_to(point(start.x, start.y));
             builder.close();
+
             let path = builder.build();
             let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
@@ -60,17 +65,28 @@ impl Draw for Rectangle {
                 color: self.color,
                 alpha: self.alpha,
             };
+
             let stroke_color = Rgba {
                 color: self.stroke_color,
                 alpha: self.alpha,
             };
 
+            // Draw fill first
+            draw.path()
+                .fill()
+                .x_y(self.position.x, self.position.y)
+                .z_degrees(self.orientation)
+                .color(color)
+                .events(&path);
+
+            // Draw stroke on top
             draw.path()
                 .stroke()
+                .x_y(self.position.x, self.position.y)
+                .z_degrees(self.orientation)
                 .color(stroke_color)
                 .stroke_weight(DEFAULT_STROKE_WEIGHT)
                 .events(&path);
-            draw.path().fill().color(color).events(&path);
         }
     }
 }
@@ -93,6 +109,18 @@ impl SetPosition for Rectangle {
 impl GetPosition for Rectangle {
     fn position(&self) -> geom::Point {
         GetPosition::position(&self.position)
+    }
+}
+
+impl GetOrientation for Rectangle {
+    fn orientation(&self) -> f32 {
+        self.orientation
+    }
+}
+
+impl SetOrientation for Rectangle {
+    fn orientation_mut(&mut self) -> &mut f32 {
+        &mut self.orientation
     }
 }
 

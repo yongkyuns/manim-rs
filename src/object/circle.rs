@@ -38,6 +38,12 @@ impl Circle {
             visible: false,
         }
     }
+    pub fn radius(&self) -> f32 {
+        self.radius
+    }
+    pub fn set_radius(&mut self, radius: f32) {
+        self.radius = radius;
+    }
 }
 
 impl Draw for Circle {
@@ -46,8 +52,8 @@ impl Draw for Circle {
             let mut builder = Path::builder();
             let sweep_angle = Angle::radians(PI * 2.0);
             let x_rotation = Angle::radians(0.0);
-            let center: lyon::Point = self.position.into();
-            let start = point(self.position.x + self.radius, self.position.y);
+            let center: lyon::Point = point(0.0, 0.0);
+            let start = point(self.radius, 0.0);
             let radii = Vector::new(self.radius, self.radius);
 
             builder.move_to(start);
@@ -67,11 +73,16 @@ impl Draw for Circle {
             };
 
             draw.path()
+                .fill()
+                .x_y(self.position.x, self.position.y)
+                .color(color)
+                .events(&path);
+            draw.path()
                 .stroke()
+                .x_y(self.position.x, self.position.y)
                 .color(stroke_color)
                 .stroke_weight(DEFAULT_STROKE_WEIGHT)
                 .events(&path);
-            draw.path().fill().color(color).events(&path);
         }
     }
 }

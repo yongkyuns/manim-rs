@@ -1,9 +1,10 @@
 use super::{Interpolate, TargetAction};
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
-use crate::arena::{Index, NodeIndex, Object};
+use crate::arena::{CircleAction, Index, NodeIndex, Object, RectangleAction};
 use crate::consts::*;
 use crate::geom::{point, GetPosition, Point, SetPosition, Vector};
+use crate::object::Object as InnerObject;
 use crate::scene::Resource;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -21,6 +22,7 @@ pub trait Actionable {
     fn move_to(&self, to: Point) -> TargetAction;
     fn to_edge(&self, direction: Vector) -> TargetAction;
     fn show_creation(&self) -> TargetAction;
+    fn scale(&self, by: f32) -> TargetAction;
 }
 
 impl<T> Actionable for T
@@ -67,6 +69,10 @@ where
         let index: Index = T::into(*self);
         TargetAction::new(NodeIndex(index), Action::ShowCreation, true)
     }
+    fn scale(&self, by: f32) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(NodeIndex(index), Action::Scale { from: 1.0, to: by }, true)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -102,6 +108,8 @@ pub enum Action {
     FadeIn,
     FadeOut,
     Transform,
+    CircleAction(CircleAction),
+    RectangleAction(RectangleAction),
 }
 
 impl Action {
@@ -140,6 +148,17 @@ impl Action {
                 object.show();
                 object.set_completion(0.0);
             }
+            Action::Scale { ref mut from, .. } => {
+                if let InnerObject::Circle(ref c) = object.inner {
+                    *from = c.radius();
+                }
+            }
+            Action::CircleAction(action) => {
+                action.init(object, resource);
+            }
+            Action::RectangleAction(action) => {
+                action.init(object, resource);
+            }
             _ => (),
         };
     }
@@ -165,6 +184,18 @@ impl Action {
             }
             Action::ShowCreation => {
                 object.set_completion(progress);
+            }
+            Action::Scale { from, to } => {
+                if let InnerObject::Circle(ref mut c) = object.inner {
+                    let r = from.interp(to, progress);
+                    c.set_radius(r);
+                }
+            }
+            Action::CircleAction(action) => {
+                action.update(object, progress);
+            }
+            Action::RectangleAction(action) => {
+                action.update(object, progress);
             }
             _ => (),
         };

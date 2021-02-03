@@ -2,7 +2,7 @@ pub use generational_arena::{Arena, Index};
 
 pub use tree::{Id, NodeArena, NodeIndex, Object};
 
-pub use index::{CircleId, RectangleId};
+pub use index::{CircleAction, CircleId, RectangleAction, RectangleId};
 
 mod index;
 mod tree;

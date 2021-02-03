@@ -1,5 +1,5 @@
 mod circle;
 mod rectangle;
 
-pub use circle::CircleId;
-pub use rectangle::RectangleId;
+pub use circle::{CircleAction, CircleId};
+pub use rectangle::{RectangleAction, RectangleId};

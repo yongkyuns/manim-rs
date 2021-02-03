@@ -5,7 +5,8 @@ use crate::draw::Draw;
 use crate::object::circle::circle;
 use crate::object::rectangle::rectangle;
 
-use nannou;
+// use std::slice::IterMut;
+
 use nannou::geom::Rect;
 
 /// Collection of resources used by animation
@@ -36,7 +37,6 @@ pub struct Scene {
     pub commands: Vec<TimedCommand>,
     objects: Arena<Object>,
     prev_command: usize,
-    // iter: Iter<TimedCommand>,
     resource: Resource,
 }
 
@@ -53,23 +53,17 @@ impl Scene {
     }
 
     pub fn play_many(&mut self, target_actions: Vec<TargetAction>) -> AnimBuilder {
-        // target_actions
-        //     .iter_mut()
-        //     .for_each(|ta| ta.finish_on_drop = false);
         AnimBuilder::new(self, target_actions)
     }
 
     pub fn update(&mut self, time: f32) {
+        // dbg!(&self.prev_command);
         self.prev_command =
             self.commands
                 .process(self.prev_command, time, &mut self.objects, &self.resource);
     }
 
     pub fn draw(&self, nannou_draw: nannou::Draw) {
-        // Draw objects in scene
-        // self.objects
-        //     .iter()
-        //     .for_each(|obj| obj.draw(nannou_draw.clone()));
         for (_idx, object) in &self.objects {
             object.draw(nannou_draw.clone());
         }

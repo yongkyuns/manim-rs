@@ -15,7 +15,7 @@ pub fn run() {
     nannou::app(scene).update(update).view(view).run();
 }
 
-fn scene(app: &App) -> Scene {
+fn scene<'a>(app: &App) -> Scene {
     app.new_window().size(640, 480).view(view).build().unwrap();
     let win_rect = app.main_window().rect();
 
