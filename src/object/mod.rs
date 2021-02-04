@@ -7,14 +7,17 @@ use nannou;
 
 pub use self::circle::Circle;
 pub use self::rectangle::Rectangle;
+pub use self::text::Text;
 
 pub mod circle;
 pub mod rectangle;
+pub mod text;
 
 #[derive(Debug, PartialEq)]
 pub enum Object {
     Circle(Circle),
     Rectangle(Rectangle),
+    Text(Text),
 }
 
 impl SetPosition for Object {
@@ -22,6 +25,7 @@ impl SetPosition for Object {
         match self {
             Object::Circle(c) => SetPosition::position_mut(c),
             Object::Rectangle(r) => SetPosition::position_mut(r),
+            Object::Text(t) => SetPosition::position_mut(t),
         }
     }
 }
@@ -31,6 +35,7 @@ impl GetPosition for Object {
         match self {
             Object::Circle(c) => GetPosition::position(c),
             Object::Rectangle(r) => GetPosition::position(r),
+            Object::Text(t) => GetPosition::position(t),
         }
     }
 }
@@ -40,12 +45,14 @@ impl PathCompletion for Object {
         match self {
             Object::Circle(c) => c.completion(),
             Object::Rectangle(r) => r.completion(),
+            Object::Text(t) => t.completion(),
         }
     }
     fn set_completion(&mut self, completion: f32) {
         match self {
             Object::Circle(c) => c.set_completion(completion),
             Object::Rectangle(r) => r.set_completion(completion),
+            Object::Text(t) => t.set_completion(completion),
         }
     }
 }
@@ -55,6 +62,7 @@ impl Draw for Object {
         match self {
             Object::Circle(c) => c.draw(draw),
             Object::Rectangle(r) => r.draw(draw),
+            Object::Text(t) => t.draw(draw),
         }
     }
 }
@@ -64,12 +72,14 @@ impl Visibility for Object {
         match self {
             Object::Circle(c) => Visibility::visible_mut(c),
             Object::Rectangle(r) => Visibility::visible_mut(r),
+            Object::Text(t) => Visibility::visible_mut(t),
         }
     }
     fn is_visible(&self) -> bool {
         match self {
             Object::Circle(c) => c.is_visible(),
             Object::Rectangle(r) => r.is_visible(),
+            Object::Text(t) => t.is_visible(),
         }
     }
 }
@@ -83,6 +93,12 @@ impl From<Circle> for Object {
 impl From<Rectangle> for Object {
     fn from(r: Rectangle) -> Self {
         Object::Rectangle(r)
+    }
+}
+
+impl From<Text> for Object {
+    fn from(t: Text) -> Self {
+        Object::Text(t)
     }
 }
 

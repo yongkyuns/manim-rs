@@ -1,9 +1,10 @@
 use crate::animation::{AnimBuilder, RunCommand, TargetAction, TimedCommand, UserCommand};
 use crate::arena::{AddObject, Arena, CircleId, HasArena, Id, Index};
-use crate::arena::{NodeArena, NodeIndex, Object, RectangleId};
+use crate::arena::{NodeArena, NodeIndex, Object, RectangleId, TextId};
 use crate::draw::Draw;
 use crate::object::circle::circle;
 use crate::object::rectangle::rectangle;
+use crate::object::text::text;
 
 // use std::slice::IterMut;
 
@@ -125,6 +126,10 @@ impl AddObject for Scene {
     fn rectangle(&mut self) -> RectangleId {
         let index = self.objects.add(rectangle());
         RectangleId(index.0)
+    }
+    fn text(&mut self, content: &str) -> TextId {
+        let index = self.objects.add(text(content));
+        TextId(index.0)
     }
 }
 

@@ -1,7 +1,7 @@
 use super::{Interpolate, TargetAction};
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
-use crate::arena::{CircleAction, Index, NodeIndex, Object, RectangleAction};
+use crate::arena::{CircleAction, Index, NodeIndex, Object, RectangleAction, TextAction};
 use crate::consts::*;
 use crate::geom::{point, GetPosition, Point, SetPosition, Vector};
 use crate::object::Object as InnerObject;
@@ -110,6 +110,7 @@ pub enum Action {
     Transform,
     CircleAction(CircleAction),
     RectangleAction(RectangleAction),
+    TextAction(TextAction),
 }
 
 impl Action {
@@ -159,6 +160,9 @@ impl Action {
             Action::RectangleAction(action) => {
                 action.init(object, resource);
             }
+            Action::TextAction(action) => {
+                action.init(object, resource);
+            }
             _ => (),
         };
     }
@@ -195,6 +199,9 @@ impl Action {
                 action.update(object, progress);
             }
             Action::RectangleAction(action) => {
+                action.update(object, progress);
+            }
+            Action::TextAction(action) => {
                 action.update(object, progress);
             }
             _ => (),

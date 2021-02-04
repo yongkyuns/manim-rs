@@ -2,7 +2,7 @@ pub use generational_arena::{Arena, Index};
 
 pub use tree::{Id, NodeArena, NodeIndex, Object};
 
-pub use index::{CircleAction, CircleId, RectangleAction, RectangleId};
+pub use index::{CircleAction, CircleId, RectangleAction, RectangleId, TextAction, TextId};
 
 mod index;
 mod tree;
@@ -17,4 +17,5 @@ pub trait HasArena {
 pub trait AddObject {
     fn circle(&mut self) -> CircleId;
     fn rectangle(&mut self) -> RectangleId;
+    fn text(&mut self, text: &str) -> TextId;
 }

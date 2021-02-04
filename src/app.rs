@@ -5,11 +5,7 @@ use crate::scene::{self, Construct, Scene};
 use nannou::lyon::algorithms::path::math::Point;
 use nannou::lyon::algorithms::path::PathSlice;
 use nannou::lyon::algorithms::walk::{walk_along_path, RegularPattern};
-use nannou::lyon::path::builder::PathBuilder;
 use nannou::lyon::path::iterator::*;
-use nannou::lyon::path::Path;
-
-use crate::path::GetPartial;
 
 pub fn run() {
     nannou::app(scene).update(update).view(view).run();
@@ -32,22 +28,23 @@ fn view(app: &App, scene: &Scene, frame: Frame) {
     let draw = app.draw();
     draw.background().color(BLACK);
 
-    let win_rect = app.main_window().rect().pad_left(20.0);
-    let text = text("Hello!").font_size(128).left_justify().build(win_rect);
-    let mut builder = Path::builder();
-    for e in text.path_events() {
-        builder.path_event(e);
-    }
-    builder.close();
-    let path = builder.build();
+    // let win_rect = app.main_window().rect().pad_left(20.0);
+    // let text = text("Hello!!")
+    //     .font_size(128)
+    //     .left_justify()
+    //     .build(win_rect);
+    // let mut builder = Path::builder();
+    // for e in text.path_events() {
+    //     builder.path_event(e);
+    // }
+    // builder.close();
+    // let path = builder.build();
 
-    let ratio = (app.time / 3.0).min(1.0);
+    // let ratio = (app.time / 3.0).min(1.0);
 
-    let path2 = path.upto(ratio, 0.01);
+    // let path2 = path.upto(ratio, 0.01);
 
-    // draw.path().fill().color(ORANGE).events(text.path_events());
-    draw.path().stroke().color(ORANGE).events(&path2);
-    // draw.path().fill().color(ORANGE).events(&path2);
+    // draw.path().stroke().color(ORANGE).events(&path2);
 
     // draw.ellipse().resolution(10).radius(50.0);
 
