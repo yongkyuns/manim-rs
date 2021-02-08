@@ -4,6 +4,7 @@ use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
 use crate::geom;
+use crate::geom::{dimension, Dimension, GetDimension, SetDimension};
 use crate::geom::{GetOrientation, GetPosition, SetOrientation, SetPosition};
 use crate::path::GetPartial;
 
@@ -16,8 +17,7 @@ use nannou::lyon::path::Path;
 pub struct Rectangle {
     position: geom::Point,
     orientation: f32,
-    pub width: f32,
-    pub height: f32,
+    dimension: Dimension,
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
@@ -28,8 +28,7 @@ pub struct Rectangle {
 impl Rectangle {
     fn new() -> Self {
         Rectangle {
-            width: 30.0,
-            height: 30.0,
+            dimension: dimension(30.0, 30.0),
             orientation: 0.0,
             position: geom::point(),
             path_completion: 1.0,
@@ -49,12 +48,12 @@ impl Draw for Rectangle {
             //     self.position.x - self.width / 2.0,
             //     self.position.y + self.height / 2.0,
             // );
-            let start = point(-self.width / 2.0, self.height / 2.0);
+            let start = point(-self.width() / 2.0, self.height() / 2.0);
 
             builder.move_to(start);
-            builder.line_to(point(start.x + self.width, start.y));
-            builder.line_to(point(start.x + self.width, start.y - self.height));
-            builder.line_to(point(start.x, start.y - self.height));
+            builder.line_to(point(start.x + self.width(), start.y));
+            builder.line_to(point(start.x + self.width(), start.y - self.height()));
+            builder.line_to(point(start.x, start.y - self.height()));
             builder.line_to(point(start.x, start.y));
             builder.close();
 
@@ -121,6 +120,18 @@ impl GetOrientation for Rectangle {
 impl SetOrientation for Rectangle {
     fn orientation_mut(&mut self) -> &mut f32 {
         &mut self.orientation
+    }
+}
+
+impl GetDimension for Rectangle {
+    fn dimension(&self) -> &Dimension {
+        GetDimension::dimension(&self.dimension)
+    }
+}
+
+impl SetDimension for Rectangle {
+    fn dimension_mut(&mut self) -> &mut Dimension {
+        SetDimension::dimension_mut(&mut self.dimension)
     }
 }
 

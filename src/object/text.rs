@@ -4,7 +4,7 @@ use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
 use crate::geom;
-use crate::geom::{point_at, GetPosition, SetPosition};
+use crate::geom::{point_at, GetOrientation, GetPosition, SetOrientation, SetPosition};
 use crate::path::GetPartial;
 
 use nannou;
@@ -108,6 +108,18 @@ impl SetPosition for Text {
 impl GetPosition for Text {
     fn position(&self) -> geom::Point {
         GetPosition::position(&self.position)
+    }
+}
+
+impl GetOrientation for Text {
+    fn orientation(&self) -> f32 {
+        self.orientation
+    }
+}
+
+impl SetOrientation for Text {
+    fn orientation_mut(&mut self) -> &mut f32 {
+        &mut self.orientation
     }
 }
 

@@ -4,7 +4,10 @@ pub use tree::{Id, NodeArena, NodeIndex, Object};
 
 pub use index::{CircleAction, CircleId, RectangleAction, RectangleId, TextAction, TextId};
 
+pub use property::rotate::Rotate;
+
 mod index;
+mod property;
 mod tree;
 
 pub trait HasArena {

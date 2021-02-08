@@ -3,7 +3,7 @@ use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
 use crate::arena::{CircleAction, Index, NodeIndex, Object, RectangleAction, TextAction};
 use crate::consts::*;
-use crate::geom::{point, GetPosition, Point, SetPosition, Vector};
+use crate::geom::{point, GetOrientation, GetPosition, Point, SetOrientation, SetPosition, Vector};
 use crate::object::Object as InnerObject;
 use crate::scene::Resource;
 
@@ -99,9 +99,13 @@ pub enum Action {
         from: f32,
         to: f32,
     },
-    Rotate {
+    RotateTo {
         from: f32,
         to: f32,
+    },
+    RotateBy {
+        from: f32,
+        by: f32,
     },
     ShowCreation,
     Write,
@@ -115,19 +119,18 @@ pub enum Action {
 
 impl Action {
     pub fn init(&mut self, object: &mut Object, resource: &Resource) {
-        let position = object.position();
         match self {
             Action::Shift {
                 ref mut from,
                 by: _,
             } => {
-                *from = position;
+                *from = object.position();
             }
             Action::MoveTo {
                 ref mut from,
                 to: _,
             } => {
-                *from = position;
+                *from = object.position();
             }
             Action::ToEdge {
                 ref mut from,
@@ -135,14 +138,14 @@ impl Action {
                 buffer,
                 direction,
             } => {
-                let mut p = position;
+                let mut p = object.position();
                 match direction {
                     Direction::Up => p.y = resource.edge_upper() - *buffer,
                     Direction::Down => p.y = resource.edge_lower() + *buffer,
                     Direction::Right => p.x = resource.edge_right() - *buffer,
                     Direction::Left => p.x = resource.edge_left() + *buffer,
                 };
-                *from = position;
+                *from = object.position();
                 *to = p;
             }
             Action::ShowCreation => {
@@ -153,6 +156,12 @@ impl Action {
                 if let InnerObject::Circle(ref c) = object.inner {
                     *from = c.radius();
                 }
+            }
+            Action::RotateTo { ref mut from, .. } => {
+                *from = object.orientation();
+            }
+            Action::RotateBy { ref mut from, .. } => {
+                *from = object.orientation();
             }
             Action::CircleAction(action) => {
                 action.init(object, resource);
@@ -194,6 +203,15 @@ impl Action {
                     let r = from.interp(to, progress);
                     c.set_radius(r);
                 }
+            }
+            Action::RotateTo { from, to } => {
+                let deg = from.interp(to, progress);
+                object.rotate_to(deg);
+            }
+            Action::RotateBy { from, by } => {
+                let ref to = *from + *by;
+                let deg = from.interp(to, progress);
+                object.rotate_to(deg);
             }
             Action::CircleAction(action) => {
                 action.update(object, progress);

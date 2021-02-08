@@ -18,7 +18,7 @@ use animation::{Actionable, TargetAction, UserCommand};
 use consts::*;
 use geom::point_at;
 // use nannou::draw::primitive::rect;
-use arena::AddObject;
+use arena::{AddObject, Rotate};
 use scene::{Construct, Scene};
 
 // use nannou::geom::Point2;
@@ -91,7 +91,7 @@ impl Construct for Scene {
 
         let t = self.text("Hello!");
         // self.show(t);
-        self.play(t.show_creation());
+        self.play(t.show_creation()).run_time(10.0);
         // let c2 = circle();
         // self.add(c2.clone());
         // self.play(c2.show_creation()).run_time(3.0);

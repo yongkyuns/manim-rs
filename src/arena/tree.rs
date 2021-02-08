@@ -2,7 +2,7 @@ use super::{Arena, HasArena};
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
 use crate::draw::Draw;
-use crate::geom::{GetPosition, Point, SetPosition};
+use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
 use crate::object::Object as InnerObject;
 use crate::scene::Scene;
 
@@ -43,6 +43,18 @@ impl SetPosition for Node {
 impl GetPosition for Node {
     fn position(&self) -> Point {
         GetPosition::position(&self.inner)
+    }
+}
+
+impl GetOrientation for Node {
+    fn orientation(&self) -> f32 {
+        GetOrientation::orientation(&self.inner)
+    }
+}
+
+impl SetOrientation for Node {
+    fn orientation_mut(&mut self) -> &mut f32 {
+        SetOrientation::orientation_mut(&mut self.inner)
     }
 }
 

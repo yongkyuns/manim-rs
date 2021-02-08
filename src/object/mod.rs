@@ -1,7 +1,7 @@
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
 use crate::draw::Draw;
-use crate::geom::{GetPosition, Point, SetPosition};
+use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
 
 use nannou;
 
@@ -23,9 +23,9 @@ pub enum Object {
 impl SetPosition for Object {
     fn position_mut(&mut self) -> &mut Point {
         match self {
-            Object::Circle(c) => SetPosition::position_mut(c),
-            Object::Rectangle(r) => SetPosition::position_mut(r),
-            Object::Text(t) => SetPosition::position_mut(t),
+            Object::Circle(o) => SetPosition::position_mut(o),
+            Object::Rectangle(o) => SetPosition::position_mut(o),
+            Object::Text(o) => SetPosition::position_mut(o),
         }
     }
 }
@@ -33,9 +33,29 @@ impl SetPosition for Object {
 impl GetPosition for Object {
     fn position(&self) -> Point {
         match self {
-            Object::Circle(c) => GetPosition::position(c),
-            Object::Rectangle(r) => GetPosition::position(r),
-            Object::Text(t) => GetPosition::position(t),
+            Object::Circle(o) => GetPosition::position(o),
+            Object::Rectangle(o) => GetPosition::position(o),
+            Object::Text(o) => GetPosition::position(o),
+        }
+    }
+}
+
+impl SetOrientation for Object {
+    fn orientation_mut(&mut self) -> &mut f32 {
+        match self {
+            Object::Circle(_) => panic!("Circle cannot rotate... yet."),
+            Object::Rectangle(o) => SetOrientation::orientation_mut(o),
+            Object::Text(o) => SetOrientation::orientation_mut(o),
+        }
+    }
+}
+
+impl GetOrientation for Object {
+    fn orientation(&self) -> f32 {
+        match self {
+            Object::Circle(_) => panic!("Circle does not have angle... yet."),
+            Object::Rectangle(o) => GetOrientation::orientation(o),
+            Object::Text(o) => GetOrientation::orientation(o),
         }
     }
 }
@@ -43,16 +63,16 @@ impl GetPosition for Object {
 impl PathCompletion for Object {
     fn completion(&self) -> f32 {
         match self {
-            Object::Circle(c) => c.completion(),
-            Object::Rectangle(r) => r.completion(),
-            Object::Text(t) => t.completion(),
+            Object::Circle(o) => o.completion(),
+            Object::Rectangle(o) => o.completion(),
+            Object::Text(o) => o.completion(),
         }
     }
     fn set_completion(&mut self, completion: f32) {
         match self {
-            Object::Circle(c) => c.set_completion(completion),
-            Object::Rectangle(r) => r.set_completion(completion),
-            Object::Text(t) => t.set_completion(completion),
+            Object::Circle(o) => o.set_completion(completion),
+            Object::Rectangle(o) => o.set_completion(completion),
+            Object::Text(o) => o.set_completion(completion),
         }
     }
 }
@@ -60,9 +80,9 @@ impl PathCompletion for Object {
 impl Draw for Object {
     fn draw(&self, draw: nannou::Draw) {
         match self {
-            Object::Circle(c) => c.draw(draw),
-            Object::Rectangle(r) => r.draw(draw),
-            Object::Text(t) => t.draw(draw),
+            Object::Circle(o) => o.draw(draw),
+            Object::Rectangle(o) => o.draw(draw),
+            Object::Text(o) => o.draw(draw),
         }
     }
 }
@@ -70,16 +90,16 @@ impl Draw for Object {
 impl Visibility for Object {
     fn visible_mut(&mut self) -> &mut bool {
         match self {
-            Object::Circle(c) => Visibility::visible_mut(c),
-            Object::Rectangle(r) => Visibility::visible_mut(r),
-            Object::Text(t) => Visibility::visible_mut(t),
+            Object::Circle(o) => Visibility::visible_mut(o),
+            Object::Rectangle(o) => Visibility::visible_mut(o),
+            Object::Text(o) => Visibility::visible_mut(o),
         }
     }
     fn is_visible(&self) -> bool {
         match self {
-            Object::Circle(c) => c.is_visible(),
-            Object::Rectangle(r) => r.is_visible(),
-            Object::Text(t) => t.is_visible(),
+            Object::Circle(o) => o.is_visible(),
+            Object::Rectangle(o) => o.is_visible(),
+            Object::Text(o) => o.is_visible(),
         }
     }
 }
