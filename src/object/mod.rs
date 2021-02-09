@@ -1,6 +1,7 @@
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
 use crate::draw::Draw;
+use crate::geom::{Dimension, GetDimension, SetDimension};
 use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
 
 use nannou;
@@ -56,6 +57,26 @@ impl GetOrientation for Object {
             Object::Circle(_) => panic!("Circle does not have angle... yet."),
             Object::Rectangle(o) => GetOrientation::orientation(o),
             Object::Text(o) => GetOrientation::orientation(o),
+        }
+    }
+}
+
+impl GetDimension for Object {
+    fn dimension(&self) -> &Dimension {
+        match self {
+            Object::Circle(o) => GetDimension::dimension(o),
+            Object::Rectangle(o) => GetDimension::dimension(o),
+            Object::Text(o) => GetDimension::dimension(o),
+        }
+    }
+}
+
+impl SetDimension for Object {
+    fn dimension_mut(&mut self) -> &mut Dimension {
+        match self {
+            Object::Circle(o) => SetDimension::dimension_mut(o),
+            Object::Rectangle(o) => SetDimension::dimension_mut(o),
+            Object::Text(o) => SetDimension::dimension_mut(o),
         }
     }
 }

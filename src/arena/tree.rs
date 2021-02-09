@@ -2,14 +2,18 @@ use super::{Arena, HasArena};
 use crate::animation::PathCompletion;
 use crate::appearance::Visibility;
 use crate::draw::Draw;
+use crate::geom::{Dimension, GetDimension, SetDimension};
 use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
 use crate::object::Object as InnerObject;
 use crate::scene::Scene;
 
 use generational_arena::Index;
 
-pub type Object = Node; // Treat Node like an object
-pub type Id = NodeIndex; // Short-hand for readability
+// pub type Object = Node; // Treat Node like an object
+// pub type Id = NodeIndex; // Short-hand for readability
+
+pub use Node as Object; // Treat Node like an object
+pub use NodeIndex as Id; // Short-hand for readability
 
 #[derive(Debug, PartialEq)]
 pub struct Node {
@@ -55,6 +59,18 @@ impl GetOrientation for Node {
 impl SetOrientation for Node {
     fn orientation_mut(&mut self) -> &mut f32 {
         SetOrientation::orientation_mut(&mut self.inner)
+    }
+}
+
+impl GetDimension for Node {
+    fn dimension(&self) -> &Dimension {
+        GetDimension::dimension(&self.inner)
+    }
+}
+
+impl SetDimension for Node {
+    fn dimension_mut(&mut self) -> &mut Dimension {
+        SetDimension::dimension_mut(&mut self.inner)
     }
 }
 

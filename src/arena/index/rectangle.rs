@@ -1,7 +1,8 @@
 use crate::animation::{Action, TargetAction};
-use crate::arena::{Index, NodeIndex, Object, Rotate};
+use crate::arena;
+use crate::arena::{Id, Index, Rotate};
 use crate::geom::{GetDimension, SetDimension};
-use crate::object::Object as InnerObject;
+use crate::object::Object;
 use crate::scene::Resource;
 // use crate::{animation::Interpolate, geom::SetOrientation};
 use crate::animation::Interpolate;
@@ -13,7 +14,7 @@ impl RectangleId {
     pub fn set_width(&self, width: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
-            NodeIndex(id),
+            Id(id),
             Action::RectangleAction(RectangleAction::SetWidth {
                 from: width, // This is dummy, overwritten in Action::init()
                 to: width,
@@ -24,7 +25,7 @@ impl RectangleId {
     pub fn set_height(&self, height: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
-            NodeIndex(id),
+            Id(id),
             Action::RectangleAction(RectangleAction::SetHeight {
                 from: height, // This is dummy, overwritten in Action::init()
                 to: height,
@@ -35,7 +36,7 @@ impl RectangleId {
     // pub fn rotate_to(&self, degree: f32) -> TargetAction {
     //     let id: Index = Self::into(*self);
     //     TargetAction::new(
-    //         NodeIndex(id),
+    //         Id(id),
     //         Action::RectangleAction(RectangleAction::RotateTo {
     //             from: degree, // This is dummy, overwritten in Action::init()
     //             to: degree,
@@ -46,7 +47,7 @@ impl RectangleId {
     // pub fn rotate_by(&self, degree: f32) -> TargetAction {
     //     let id: Index = Self::into(*self);
     //     TargetAction::new(
-    //         NodeIndex(id),
+    //         Id(id),
     //         Action::RectangleAction(RectangleAction::RotateBy {
     //             from: degree, // This is dummy, overwritten in Action::init()
     //             by: degree,
@@ -80,8 +81,8 @@ pub enum RectangleAction {
 }
 
 impl RectangleAction {
-    pub fn init(&mut self, object: &mut Object, _resource: &Resource) {
-        if let InnerObject::Rectangle(ref r) = object.inner {
+    pub fn init(&mut self, object: &mut arena::Object, _resource: &Resource) {
+        if let Object::Rectangle(ref r) = object.inner {
             match self {
                 RectangleAction::SetWidth { ref mut from, .. } => {
                     *from = r.width();
@@ -99,8 +100,8 @@ impl RectangleAction {
             }
         }
     }
-    pub fn update(&mut self, object: &mut Object, progress: f32) {
-        if let InnerObject::Rectangle(ref mut r) = object.inner {
+    pub fn update(&mut self, object: &mut arena::Object, progress: f32) {
+        if let Object::Rectangle(ref mut r) = object.inner {
             match self {
                 RectangleAction::SetWidth { from, to } => {
                     let width = from.interp(to, progress);

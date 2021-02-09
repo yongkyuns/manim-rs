@@ -4,6 +4,7 @@ use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
 use crate::geom;
+use crate::geom::{dimension, Dimension, GetDimension, SetDimension};
 use crate::geom::{point_at, GetPosition, SetPosition};
 use crate::path::GetPartial;
 
@@ -17,7 +18,7 @@ use std::f32::consts::PI;
 
 #[derive(Debug, PartialEq)]
 pub struct Circle {
-    radius: f32,
+    dimension: Dimension,
     position: geom::Point,
     path_completion: f32,
     color: Rgb,
@@ -29,7 +30,7 @@ pub struct Circle {
 impl Circle {
     fn new() -> Self {
         Circle {
-            radius: 12.0,
+            dimension: dimension(12.0, 12.0),
             position: point_at(0.0, 0.0),
             path_completion: 1.0,
             color: DEFAULT_FILL_COLOR,
@@ -38,11 +39,14 @@ impl Circle {
             visible: false,
         }
     }
+
     pub fn radius(&self) -> f32 {
-        self.radius
+        self.width() / 2.0
     }
+
     pub fn set_radius(&mut self, radius: f32) {
-        self.radius = radius;
+        self.set_width(radius * 2.0);
+        self.set_height(radius * 2.0);
     }
 }
 
@@ -53,8 +57,8 @@ impl Draw for Circle {
             let sweep_angle = Angle::radians(PI * 2.0);
             let x_rotation = Angle::radians(0.0);
             let center: lyon::Point = point(0.0, 0.0);
-            let start = point(self.radius, 0.0);
-            let radii = Vector::new(self.radius, self.radius);
+            let start = point(self.radius(), 0.0);
+            let radii = Vector::new(self.radius(), self.radius());
 
             builder.move_to(start);
             builder.arc(center, radii, sweep_angle, x_rotation);
@@ -105,6 +109,18 @@ impl SetPosition for Circle {
 impl GetPosition for Circle {
     fn position(&self) -> geom::Point {
         GetPosition::position(&self.position)
+    }
+}
+
+impl GetDimension for Circle {
+    fn dimension(&self) -> &Dimension {
+        GetDimension::dimension(&self.dimension)
+    }
+}
+
+impl SetDimension for Circle {
+    fn dimension_mut(&mut self) -> &mut Dimension {
+        SetDimension::dimension_mut(&mut self.dimension)
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::animation::Interpolate;
 use crate::animation::{Action, TargetAction};
-use crate::arena::{Index, NodeIndex, Object};
+use crate::arena;
+use crate::arena::{Id, Index};
 use crate::object::Object as InnerObject;
 use crate::scene::Resource;
 
@@ -11,7 +12,7 @@ impl CircleId {
     pub fn set_radius(&self, radius: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
-            NodeIndex(id),
+            Id(id),
             Action::CircleAction(CircleAction::SetRadius {
                 from: 1.0, // This is dummy, overwritten in Action::init()
                 to: radius,
@@ -41,7 +42,7 @@ pub enum CircleAction {
 }
 
 impl CircleAction {
-    pub fn init(&mut self, object: &mut Object, _resource: &Resource) {
+    pub fn init(&mut self, object: &mut arena::Object, _resource: &Resource) {
         if let InnerObject::Circle(ref c) = object.inner {
             match self {
                 CircleAction::SetRadius { ref mut from, .. } => {
@@ -51,7 +52,7 @@ impl CircleAction {
             }
         }
     }
-    pub fn update(&mut self, object: &mut Object, progress: f32) {
+    pub fn update(&mut self, object: &mut arena::Object, progress: f32) {
         if let InnerObject::Circle(ref mut c) = object.inner {
             match self {
                 CircleAction::SetRadius { from, to } => {

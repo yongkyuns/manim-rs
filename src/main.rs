@@ -49,6 +49,7 @@ impl Construct for Scene {
 
         let mut edge: Vec<TargetAction> = Vec::new();
         let mut create: Vec<TargetAction> = Vec::new();
+        // let mut scale: Vec<TargetAction> = Vec::new();
         for _ in 0..600 {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
@@ -58,10 +59,12 @@ impl Construct for Scene {
             self.act(c.set_radius(random_range(0.1, 20.0)));
             create.push(c.show_creation());
             edge.push(c.to_edge(DOWN));
+            // scale.push(c.scale(3.0));
         }
         self.wait(1.0);
         self.play_many(create);
         self.play_many(edge).rate_func(BOUNCE_OUT);
+        // self.play_many(scale).rate_func(BOUNCE_OUT);
 
         // let c2 = self.new(circle());
         // self.act(c2.move_to(point_at(100.0, 100.0)));
@@ -84,7 +87,7 @@ impl Construct for Scene {
         // self.show(c3);
         self.play(c3.show_creation());
         self.play(r3.show_creation());
-        self.play(c3.set_radius(100.0)).rate_func(BOUNCE_OUT);
+        self.play(c3.scale(10.0)).rate_func(BOUNCE_OUT);
         self.play(r3.set_height(100.0)).rate_func(QUAD);
         self.play(r3.rotate_by(360.0 * 3.0)).rate_func(QUINT);
         // self.play(r3.scale(2.0)).rate_func(QUINT);

@@ -4,6 +4,7 @@ use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
 use crate::geom;
+use crate::geom::{dimension, Dimension, GetDimension, SetDimension};
 use crate::geom::{point_at, GetOrientation, GetPosition, SetOrientation, SetPosition};
 use crate::path::GetPartial;
 
@@ -18,6 +19,7 @@ use nannou::lyon::path::Path;
 pub struct Text {
     string: String,
     font_size: u32,
+    dimension: Dimension,
     position: geom::Point,
     orientation: f32,
     path_completion: f32,
@@ -32,6 +34,7 @@ impl Text {
         Text {
             string: String::from(text),
             font_size: 90,
+            dimension: dimension(500.0, 120.0),
             position: point_at(0.0, 0.0),
             orientation: 0.0,
             path_completion: 1.0,
@@ -108,6 +111,18 @@ impl SetPosition for Text {
 impl GetPosition for Text {
     fn position(&self) -> geom::Point {
         GetPosition::position(&self.position)
+    }
+}
+
+impl GetDimension for Text {
+    fn dimension(&self) -> &Dimension {
+        GetDimension::dimension(&self.dimension)
+    }
+}
+
+impl SetDimension for Text {
+    fn dimension_mut(&mut self) -> &mut Dimension {
+        SetDimension::dimension_mut(&mut self.dimension)
     }
 }
 

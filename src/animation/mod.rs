@@ -10,6 +10,7 @@ use crate::scene::Resource;
 pub mod action;
 pub mod builder;
 pub mod command;
+pub mod dimension;
 
 pub fn lerp(from: f32, to: f32, p: f32) -> f32 {
     from * (1.0 - p) + to * (p)
