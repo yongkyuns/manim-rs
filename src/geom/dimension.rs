@@ -1,3 +1,5 @@
+use crate::animation::Interpolate;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Dimension {
     width: f32,
@@ -6,6 +8,24 @@ pub struct Dimension {
 
 impl Dimension {
     fn new(width: f32, height: f32) -> Self {
+        Self { width, height }
+    }
+}
+
+impl Interpolate for Dimension {
+    fn interp_mut(&mut self, other: &Self, progress: f32)
+    where
+        Self: Sized,
+    {
+        self.set_width(self.width().interp(&other.width(), progress));
+        self.set_height(self.height().interp(&other.height(), progress));
+    }
+    fn interp(&self, other: &Self, progress: f32) -> Self
+    where
+        Self: Sized,
+    {
+        let width = self.width().interp(&other.width(), progress);
+        let height = self.height().interp(&other.height(), progress);
         Self { width, height }
     }
 }
@@ -43,5 +63,8 @@ pub trait SetDimension {
     }
     fn set_height(&mut self, height: f32) {
         self.dimension_mut().height = height;
+    }
+    fn set_size(&mut self, other: Dimension) {
+        *self.dimension_mut() = other;
     }
 }

@@ -122,6 +122,12 @@ impl SetDimension for Circle {
     fn dimension_mut(&mut self) -> &mut Dimension {
         SetDimension::dimension_mut(&mut self.dimension)
     }
+    fn set_width(&mut self, width: f32) {
+        self.set_size(dimension(width, width));
+    }
+    fn set_height(&mut self, height: f32) {
+        self.set_size(dimension(height, height));
+    }
 }
 
 impl Visibility for Circle {

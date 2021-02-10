@@ -49,7 +49,6 @@ impl Construct for Scene {
 
         let mut edge: Vec<TargetAction> = Vec::new();
         let mut create: Vec<TargetAction> = Vec::new();
-        // let mut scale: Vec<TargetAction> = Vec::new();
         for _ in 0..600 {
             let x = random_range(-320.0, 320.0);
             let y = random_range(-240.0, 240.0);
@@ -59,12 +58,12 @@ impl Construct for Scene {
             self.act(c.set_radius(random_range(0.1, 20.0)));
             create.push(c.show_creation());
             edge.push(c.to_edge(DOWN));
-            // scale.push(c.scale(3.0));
+            edge.push(c.scale_by(0.3));
+            // edge.push(c.set_width(0.3));
         }
-        self.wait(1.0);
+
         self.play_many(create);
         self.play_many(edge).rate_func(BOUNCE_OUT);
-        // self.play_many(scale).rate_func(BOUNCE_OUT);
 
         // let c2 = self.new(circle());
         // self.act(c2.move_to(point_at(100.0, 100.0)));
@@ -83,18 +82,17 @@ impl Construct for Scene {
         let r3 = self.rectangle();
         self.act(c3.move_to(point_at(200.0, -100.0)));
         self.act(r3.move_to(point_at(200.0, 100.0)));
-        // self.show(r3);
-        // self.show(c3);
         self.play(c3.show_creation());
         self.play(r3.show_creation());
-        self.play(c3.scale(10.0)).rate_func(BOUNCE_OUT);
+        // self.play(c3.scale_by(10.0)).rate_func(BOUNCE_OUT);
         self.play(r3.set_height(100.0)).rate_func(QUAD);
+        self.play(c3.set_radius(50.0)).rate_func(BOUNCE_OUT);
         self.play(r3.rotate_by(360.0 * 3.0)).rate_func(QUINT);
-        // self.play(r3.scale(2.0)).rate_func(QUINT);
 
         let t = self.text("Hello!");
-        // self.show(t);
-        self.play(t.show_creation()).run_time(10.0);
+        self.play(t.show_creation()).run_time(2.0);
+        self.play(t.scale_by(0.1)).rate_func(QUINT);
+
         // let c2 = circle();
         // self.add(c2.clone());
         // self.play(c2.show_creation()).run_time(3.0);

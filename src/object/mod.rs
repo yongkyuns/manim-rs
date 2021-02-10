@@ -79,6 +79,20 @@ impl SetDimension for Object {
             Object::Text(o) => SetDimension::dimension_mut(o),
         }
     }
+    fn set_height(&mut self, height: f32) {
+        match self {
+            Object::Circle(o) => SetDimension::set_height(o, height),
+            Object::Rectangle(o) => SetDimension::set_height(o, height),
+            Object::Text(o) => SetDimension::set_height(o, height),
+        }
+    }
+    fn set_width(&mut self, width: f32) {
+        match self {
+            Object::Circle(o) => SetDimension::set_height(o, width),
+            Object::Rectangle(o) => SetDimension::set_height(o, width),
+            Object::Text(o) => SetDimension::set_height(o, width),
+        }
+    }
 }
 
 impl PathCompletion for Object {

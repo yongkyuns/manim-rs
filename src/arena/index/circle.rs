@@ -1,8 +1,7 @@
-use crate::animation::Interpolate;
-use crate::animation::{Action, TargetAction};
+use crate::animation::{Action, ChangeSize, Interpolate, TargetAction};
 use crate::arena;
 use crate::arena::{Id, Index};
-use crate::object::Object as InnerObject;
+use crate::object::Object;
 use crate::scene::Resource;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -13,10 +12,11 @@ impl CircleId {
         let id: Index = Self::into(*self);
         TargetAction::new(
             Id(id),
-            Action::CircleAction(CircleAction::SetRadius {
-                from: 1.0, // This is dummy, overwritten in Action::init()
-                to: radius,
-            }),
+            // Action::CircleAction(CircleAction::SetRadius {
+            //     from: 1.0, // This is dummy, overwritten in Action::init()
+            //     to: radius,
+            // }),
+            Action::ChangeSize(ChangeSize::set_width(radius * 2.0)),
             true,
         )
     }
@@ -43,7 +43,7 @@ pub enum CircleAction {
 
 impl CircleAction {
     pub fn init(&mut self, object: &mut arena::Object, _resource: &Resource) {
-        if let InnerObject::Circle(ref c) = object.inner {
+        if let Object::Circle(ref c) = object.inner {
             match self {
                 CircleAction::SetRadius { ref mut from, .. } => {
                     *from = c.radius();
@@ -53,7 +53,7 @@ impl CircleAction {
         }
     }
     pub fn update(&mut self, object: &mut arena::Object, progress: f32) {
-        if let InnerObject::Circle(ref mut c) = object.inner {
+        if let Object::Circle(ref mut c) = object.inner {
             match self {
                 CircleAction::SetRadius { from, to } => {
                     let r = from.interp(to, progress);

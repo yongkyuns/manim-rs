@@ -72,6 +72,12 @@ impl SetDimension for Node {
     fn dimension_mut(&mut self) -> &mut Dimension {
         SetDimension::dimension_mut(&mut self.inner)
     }
+    fn set_height(&mut self, height: f32) {
+        SetDimension::set_height(&mut self.inner, height);
+    }
+    fn set_width(&mut self, height: f32) {
+        SetDimension::set_width(&mut self.inner, height);
+    }
 }
 
 impl Draw for Node {

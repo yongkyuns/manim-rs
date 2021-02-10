@@ -51,10 +51,8 @@ impl ChangeSize {
                 object.set_height(height);
             }
             ChangeSize::Scale { from, to, .. } => {
-                let w = from.width().interp(&to.width(), progress);
-                let h = from.height().interp(&to.height(), progress);
-                object.set_width(w);
-                object.set_height(h);
+                let now = from.interp(&to, progress);
+                object.set_size(now);
             }
         }
     }
@@ -64,5 +62,11 @@ impl ChangeSize {
             to: dimension(0.0, 0.0),
             by,
         }
+    }
+    pub fn set_width(to: f32) -> Self {
+        Self::SetWidth { from: 1.0, to }
+    }
+    pub fn set_height(to: f32) -> Self {
+        Self::SetHeight { from: 1.0, to }
     }
 }

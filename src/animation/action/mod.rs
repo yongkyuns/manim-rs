@@ -1,4 +1,3 @@
-use super::dimension::ChangeSize;
 use super::{Interpolate, TargetAction};
 
 use crate::animation::PathCompletion;
@@ -6,8 +5,11 @@ use crate::appearance::Visibility;
 use crate::arena::{CircleAction, Id, Index, Object, RectangleAction, TextAction};
 use crate::consts::*;
 use crate::geom::{point, GetOrientation, GetPosition, Point, SetOrientation, SetPosition, Vector};
-// use crate::object::Object as InnerObject;
 use crate::scene::Resource;
+
+pub use dimension::ChangeSize;
+
+pub mod dimension;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Direction {
@@ -24,7 +26,9 @@ pub trait Actionable {
     fn move_to(&self, to: Point) -> TargetAction;
     fn to_edge(&self, direction: Vector) -> TargetAction;
     fn show_creation(&self) -> TargetAction;
-    fn scale(&self, by: f32) -> TargetAction;
+    fn scale_by(&self, by: f32) -> TargetAction;
+    fn set_width(&self, to: f32) -> TargetAction;
+    fn set_height(&self, to: f32) -> TargetAction;
 }
 
 impl<T> Actionable for T
@@ -71,12 +75,27 @@ where
         let index: Index = T::into(*self);
         TargetAction::new(Id(index), Action::ShowCreation, true)
     }
-    fn scale(&self, by: f32) -> TargetAction {
+    fn scale_by(&self, by: f32) -> TargetAction {
         let index: Index = T::into(*self);
-        // TargetAction::new(Id(index), Action::ChangeSize(ChangeSize::Scale{ from: 1.0, to: by }), true)
         TargetAction::new(
             Id(index),
             Action::ChangeSize(ChangeSize::scale_by(by)),
+            true,
+        )
+    }
+    fn set_width(&self, to: f32) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(
+            Id(index),
+            Action::ChangeSize(ChangeSize::set_width(to)),
+            true,
+        )
+    }
+    fn set_height(&self, to: f32) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(
+            Id(index),
+            Action::ChangeSize(ChangeSize::set_height(to)),
             true,
         )
     }
@@ -103,18 +122,6 @@ pub enum Action {
         to: Point,
     },
     ChangeSize(ChangeSize),
-    // Scale {
-    //     from: Dimension,
-    //     to: Dimension,
-    // },
-    // SetWidth {
-    //     from: f32,
-    //     to: f32,
-    // },
-    // SetHeight {
-    //     from: f32,
-    //     to: f32,
-    // },
     RotateTo {
         from: f32,
         to: f32,
@@ -168,11 +175,6 @@ impl Action {
                 object.show();
                 object.set_completion(0.0);
             }
-            // Action::Scale { ref mut from, .. } => {
-            //     // if let InnerObject::Circle(ref c) = object.inner {
-            //     //     *from = c.radius();
-            //     // }
-            // }
             Action::ChangeSize(action) => {
                 action.init(object, resource);
             }
@@ -217,12 +219,6 @@ impl Action {
             Action::ShowCreation => {
                 object.set_completion(progress);
             }
-            // Action::Scale { from, to } => {
-            //     // if let InnerObject::Circle(ref mut c) = object.inner {
-            //     //     let r = from.interp(to, progress);
-            //     //     c.set_radius(r);
-            //     // }
-            // }
             Action::ChangeSize(action) => {
                 action.update(object, progress);
             }

@@ -55,7 +55,8 @@ impl Text {
 impl Draw for Text {
     fn draw(&self, draw: nannou::Draw) {
         if self.visible {
-            let rect = nannou::geom::Rect::from_w_h(500.0, 120.0);
+            let rect =
+                nannou::geom::Rect::from_w_h(self.dimension.width(), self.dimension.height());
             let text = nannou::text::text(&self.string)
                 .font_size(self.font_size)
                 .left_justify()
@@ -87,7 +88,7 @@ impl Draw for Text {
                 .stroke()
                 .x_y(self.position.x, self.position.y)
                 .color(stroke_color)
-                .stroke_weight(DEFAULT_STROKE_WEIGHT)
+                .stroke_weight(DEFAULT_TEXT_STROKE_WEIGHT)
                 .events(&path);
         }
     }
@@ -124,6 +125,13 @@ impl SetDimension for Text {
     fn dimension_mut(&mut self) -> &mut Dimension {
         SetDimension::dimension_mut(&mut self.dimension)
     }
+    fn set_width(&mut self, width: f32) {
+        self.set_size(dimension(width, width));
+    }
+    fn set_height(&mut self, height: f32) {
+        self.set_size(dimension(height, height));
+    }
+    // fn set_size(&mut self, other: Dimension) {}
 }
 
 impl GetOrientation for Text {

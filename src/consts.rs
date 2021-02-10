@@ -29,6 +29,7 @@ pub const MED_SMALL_BUFF: f32 = 0.25;
 pub const LARGE_BUFF: f32 = 0.5;
 
 pub const DEFAULT_STROKE_WEIGHT: f32 = 3.0;
+pub const DEFAULT_TEXT_STROKE_WEIGHT: f32 = 3.0;
 
 pub const DEFAULT_FILL_COLOR: Rgb = RED_D;
 // pub const DEFAULT_FILL_COLOR: Rgb = Rgb {
