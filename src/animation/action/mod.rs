@@ -1,7 +1,7 @@
 use super::{Interpolate, TargetAction};
 
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::SetOpacity;
 use crate::arena::{CircleAction, Id, Index, Object, RectangleAction, TextAction};
 use crate::consts::*;
 use crate::geom::{point, GetOrientation, GetPosition, Point, SetOrientation, SetPosition, Vector};
@@ -22,22 +22,25 @@ pub enum Direction {
 /// Returns `TargetAction` which can change object instantly, or
 /// Furuther gets converted to `Animation` which contains duration and interpolation function
 pub trait Actionable {
-    fn shift(&self, by: Vector) -> TargetAction;
+    fn move_by(&self, by: Vector) -> TargetAction;
     fn move_to(&self, to: Point) -> TargetAction;
     fn to_edge(&self, direction: Vector) -> TargetAction;
     fn show_creation(&self) -> TargetAction;
+    fn fade_in(&self) -> TargetAction;
     fn scale_by(&self, by: f32) -> TargetAction;
     fn set_width(&self, to: f32) -> TargetAction;
     fn set_height(&self, to: f32) -> TargetAction;
+    fn rotate_by(&self, by: f32) -> TargetAction;
+    fn rotate_to(&self, to: f32) -> TargetAction;
 }
 
 impl<T> Actionable for T
 where
     T: Into<Index> + Sized + Copy,
 {
-    fn shift(&self, by: Vector) -> TargetAction {
+    fn move_by(&self, by: Vector) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::Shift { from: point(), by }, true)
+        TargetAction::new(Id(index), Action::MoveBy { from: point(), by }, true)
     }
     fn move_to(&self, to: Point) -> TargetAction {
         let index: Index = T::into(*self);
@@ -75,6 +78,10 @@ where
         let index: Index = T::into(*self);
         TargetAction::new(Id(index), Action::ShowCreation, true)
     }
+    fn fade_in(&self) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(Id(index), Action::FadeIn, true)
+    }
     fn scale_by(&self, by: f32) -> TargetAction {
         let index: Index = T::into(*self);
         TargetAction::new(
@@ -99,11 +106,19 @@ where
             true,
         )
     }
+    fn rotate_by(&self, by: f32) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(Id(index), Action::RotateBy { from: 0.0, by }, true)
+    }
+    fn rotate_to(&self, to: f32) -> TargetAction {
+        let index: Index = T::into(*self);
+        TargetAction::new(Id(index), Action::RotateTo { from: 0.0, to }, true)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
-    Shift {
+    MoveBy {
         from: Point,
         by: Vector,
     },
@@ -143,7 +158,7 @@ pub enum Action {
 impl Action {
     pub fn init(&mut self, object: &mut Object, resource: &Resource) {
         match self {
-            Action::Shift {
+            Action::MoveBy {
                 ref mut from,
                 by: _,
             } => {
@@ -175,6 +190,9 @@ impl Action {
                 object.show();
                 object.set_completion(0.0);
             }
+            Action::FadeIn => {
+                object.set_alpha(0.0);
+            }
             Action::ChangeSize(action) => {
                 action.init(object, resource);
             }
@@ -198,7 +216,7 @@ impl Action {
     }
     pub fn update(&mut self, object: &mut Object, progress: f32) {
         match self {
-            Action::Shift { ref mut from, by } => {
+            Action::MoveBy { ref mut from, by } => {
                 let ref to = *from + *by;
                 let now = from.interp(to, progress);
                 object.move_to(now.x, now.y);
@@ -217,7 +235,10 @@ impl Action {
                 object.move_to(now.x, now.y);
             }
             Action::ShowCreation => {
-                object.set_completion(progress);
+                object.set_completion(progress.min(1.0).max(0.0));
+            }
+            Action::FadeIn => {
+                object.set_alpha(progress.min(1.0).max(0.0));
             }
             Action::ChangeSize(action) => {
                 action.update(object, progress);
@@ -245,5 +266,68 @@ impl Action {
     }
     pub fn complete(&mut self, object: &mut Object) {
         self.update(object, 1.0);
+    }
+}
+
+pub struct Animator<T, InitFn, UpdateFn>
+where
+    T: Interpolate,
+    InitFn: FnMut(&Object) -> T,
+    UpdateFn: FnMut(&mut Object, T),
+{
+    from: Option<T>,
+    to: T,
+    initializer: InitFn,
+    updater: UpdateFn,
+}
+
+impl<T, InitFn, UpdateFn> Animator<T, InitFn, UpdateFn>
+where
+    T: Interpolate,
+    InitFn: FnMut(&Object) -> T,
+    UpdateFn: FnMut(&mut Object, T),
+{
+    pub fn new(to: T, initializer: InitFn, updater: UpdateFn) -> Self {
+        Self {
+            from: None,
+            to,
+            initializer,
+            updater,
+        }
+    }
+    pub fn update(&mut self, object: &mut Object, progress: f32) {
+        if let None = self.from {
+            self.from = Some((self.initializer)(object));
+        }
+        if let Some(from) = &self.from {
+            let now = from.interp(&self.to, progress);
+            (self.updater)(object, now);
+        }
+    }
+    pub fn complete(&mut self, object: &mut Object) {
+        self.update(object, 1.0);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::geom::{point_at, GetDimension, GetPosition, SetDimension, SetPosition};
+    use crate::object::rectangle::rectangle;
+    #[test]
+    fn test_case() {
+        let mut rec = rectangle();
+        let mut change_width = Animator::new(200.0, |obj| obj.width(), |obj, w| obj.set_width(w));
+        let mut change_pos = Animator::new(
+            point_at(100.0, 200.0),
+            |obj| obj.position(),
+            |obj, p| obj.move_to(p.x, p.y),
+        );
+        for i in 0..100 {
+            change_width.update(&mut rec, i as f32 / 100.0);
+            change_pos.update(&mut rec, i as f32 / 100.0);
+            dbg!(rec.width());
+            dbg!(rec.position());
+        }
     }
 }

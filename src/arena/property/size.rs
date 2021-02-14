@@ -1,10 +1,10 @@
 use crate::animation::{Action, TargetAction};
-use crate::arena::{Index, NodeIndex};
+use crate::arena::{Id, Index};
 pub trait Dimension: Into<Index> + Copy {
     fn set_width(&self, degree: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
-            NodeIndex(id),
+            Id(id),
             Action::RotateTo {
                 from: degree, // This is dummy, overwritten in Action::init()
                 to: degree,
@@ -12,10 +12,10 @@ pub trait Dimension: Into<Index> + Copy {
             true,
         )
     }
-    fn rotate_by(&self, degree: f32) -> TargetAction {
+    fn set_height(&self, degree: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
-            NodeIndex(id),
+            Id(id),
             Action::RotateBy {
                 from: degree, // This is dummy, overwritten in Action::init()
                 by: degree,

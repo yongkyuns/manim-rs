@@ -1,5 +1,5 @@
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::{GetOpacity, Opacity, SetOpacity};
 use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
@@ -25,38 +25,51 @@ pub struct Text {
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
-    alpha: f32,
-    visible: bool,
+    opacity: Opacity,
 }
 
 impl Text {
     fn new(text: &str) -> Self {
-        Text {
+        let mut text = Text {
             string: String::from(text),
             font_size: 90,
-            dimension: dimension(500.0, 120.0),
+            dimension: dimension(2000.0, 2000.0),
             position: point_at(0.0, 0.0),
             orientation: 0.0,
             path_completion: 1.0,
             color: DEFAULT_FILL_COLOR,
             stroke_color: DEFAULT_STROKE_COLOR,
-            alpha: 1.0,
-            visible: false,
-        }
+            opacity: Opacity::new(false),
+        };
+        text.update_size();
+        text
     }
     pub fn string(&self) -> &str {
         &self.string
     }
     pub fn set_text(&mut self, text: &str) {
         self.string = String::from(text);
+        self.update_size();
+    }
+    pub fn set_font_size(&mut self, size: u32) {
+        self.font_size = size;
+        self.update_size();
+    }
+    fn update_size(&mut self) {
+        let rect = nannou::geom::Rect::from_w_h(self.width(), self.height());
+        let text = nannou::text::text(&self.string)
+            .font_size(self.font_size)
+            .left_justify()
+            .build(rect);
+        let bbox = text.bounding_rect();
+        self.dimension = dimension(bbox.w(), bbox.h());
     }
 }
 
 impl Draw for Text {
     fn draw(&self, draw: nannou::Draw) {
-        if self.visible {
-            let rect =
-                nannou::geom::Rect::from_w_h(self.dimension.width(), self.dimension.height());
+        if self.is_visible() {
+            let rect = nannou::geom::Rect::from_w_h(self.width(), self.height());
             let text = nannou::text::text(&self.string)
                 .font_size(self.font_size)
                 .left_justify()
@@ -67,26 +80,43 @@ impl Draw for Text {
                 builder.path_event(e);
             }
             builder.close();
+
             let path = builder.build();
             let path = path.upto(self.path_completion, DEFAULT_FLATTEN_TOLERANCE);
 
             let color = Rgba {
                 color: self.color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
             let stroke_color = Rgba {
                 color: self.stroke_color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
+
+            // let bbox = text.bounding_rect();
+            // draw.rect()
+            //     .x_y(bbox.x() + self.position().x, bbox.y() + self.position().y)
+            //     .z_degrees(self.orientation)
+            //     .w_h(self.width(), self.height())
+            //     .color(RED_D);
+
+            // for (_glyph, rect) in text.glyphs() {
+            //     draw.rect()
+            //         .x_y(rect.x() + self.position.x, rect.y() + self.position.y)
+            //         .wh(rect.wh())
+            //         .hsla(0.5, 1.0, 0.5, 0.5);
+            // }
 
             draw.path()
                 .fill()
                 .x_y(self.position.x, self.position.y)
+                .z_degrees(self.orientation)
                 .color(color)
                 .events(&path);
             draw.path()
                 .stroke()
                 .x_y(self.position.x, self.position.y)
+                .z_degrees(self.orientation)
                 .color(stroke_color)
                 .stroke_weight(DEFAULT_TEXT_STROKE_WEIGHT)
                 .events(&path);
@@ -126,12 +156,18 @@ impl SetDimension for Text {
         SetDimension::dimension_mut(&mut self.dimension)
     }
     fn set_width(&mut self, width: f32) {
-        self.set_size(dimension(width, width));
+        self.set_size(dimension(width, self.height()));
     }
     fn set_height(&mut self, height: f32) {
-        self.set_size(dimension(height, height));
+        self.set_size(dimension(self.width(), height));
     }
-    // fn set_size(&mut self, other: Dimension) {}
+    fn set_size(&mut self, size: Dimension) {
+        let scale_w = size.width() / self.width();
+        let scale_h = size.height() / self.height();
+        let scale = scale_w.min(scale_h);
+        let font_size = ((self.font_size as f32 * scale) as u32).max(0_u32);
+        self.set_font_size(font_size);
+    }
 }
 
 impl GetOrientation for Text {
@@ -146,12 +182,18 @@ impl SetOrientation for Text {
     }
 }
 
-impl Visibility for Text {
-    fn visible_mut(&mut self) -> &mut bool {
-        &mut self.visible
+impl GetOpacity for Text {
+    fn opacity(&self) -> f32 {
+        GetOpacity::opacity(&self.opacity)
     }
     fn is_visible(&self) -> bool {
-        self.visible
+        GetOpacity::is_visible(&self.opacity)
+    }
+}
+
+impl SetOpacity for Text {
+    fn opacity_mut(&mut self) -> &mut Opacity {
+        SetOpacity::opacity_mut(&mut self.opacity)
     }
 }
 

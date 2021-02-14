@@ -1,5 +1,5 @@
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::{GetOpacity, Opacity, SetOpacity};
 use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
@@ -23,8 +23,7 @@ pub struct Circle {
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
-    alpha: f32,
-    visible: bool,
+    opacity: Opacity,
 }
 
 impl Circle {
@@ -35,8 +34,7 @@ impl Circle {
             path_completion: 1.0,
             color: DEFAULT_FILL_COLOR,
             stroke_color: DEFAULT_STROKE_COLOR,
-            alpha: 1.0,
-            visible: false,
+            opacity: Opacity::new(false),
         }
     }
 
@@ -52,7 +50,7 @@ impl Circle {
 
 impl Draw for Circle {
     fn draw(&self, draw: nannou::Draw) {
-        if self.visible {
+        if self.is_visible() {
             let mut builder = Path::builder();
             let sweep_angle = Angle::radians(PI * 2.0);
             let x_rotation = Angle::radians(0.0);
@@ -69,11 +67,11 @@ impl Draw for Circle {
 
             let color = Rgba {
                 color: self.color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
             let stroke_color = Rgba {
                 color: self.stroke_color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
 
             draw.path()
@@ -130,12 +128,18 @@ impl SetDimension for Circle {
     }
 }
 
-impl Visibility for Circle {
-    fn visible_mut(&mut self) -> &mut bool {
-        &mut self.visible
+impl GetOpacity for Circle {
+    fn opacity(&self) -> f32 {
+        GetOpacity::opacity(&self.opacity)
     }
     fn is_visible(&self) -> bool {
-        self.visible
+        GetOpacity::is_visible(&self.opacity)
+    }
+}
+
+impl SetOpacity for Circle {
+    fn opacity_mut(&mut self) -> &mut Opacity {
+        SetOpacity::opacity_mut(&mut self.opacity)
     }
 }
 

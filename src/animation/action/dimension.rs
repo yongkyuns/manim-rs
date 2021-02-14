@@ -5,19 +5,10 @@ use crate::scene::Resource;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ChangeSize {
-    SetWidth {
-        from: f32,
-        to: f32,
-    },
-    SetHeight {
-        from: f32,
-        to: f32,
-    },
-    Scale {
-        from: Dimension,
-        to: Dimension,
-        by: f32,
-    },
+    SetWidth { from: f32, to: f32 },
+    SetHeight { from: f32, to: f32 },
+    SetSize { from: Dimension, to: Dimension },
+    Scale { from: Dimension, by: f32 },
 }
 
 impl ChangeSize {
@@ -25,18 +16,20 @@ impl ChangeSize {
         match self {
             ChangeSize::SetWidth { ref mut from, .. } => {
                 *from = object.width();
+                dbg!(from);
             }
             ChangeSize::SetHeight { ref mut from, .. } => {
                 *from = object.height();
             }
-            ChangeSize::Scale {
+            ChangeSize::SetSize {
                 ref mut from,
                 ref mut to,
-                by,
-                ..
             } => {
                 *from = dimension(object.width(), object.height());
-                *to = dimension(object.width() * (*by), object.height() * (*by));
+                *to = dimension(to.width(), to.height());
+            }
+            ChangeSize::Scale { ref mut from, by } => {
+                *from = dimension(object.width(), object.height());
             }
         }
     }
@@ -50,16 +43,22 @@ impl ChangeSize {
                 let height = from.interp(to, progress);
                 object.set_height(height);
             }
-            ChangeSize::Scale { from, to, .. } => {
+            ChangeSize::SetSize { from, to } => {
                 let now = from.interp(&to, progress);
                 object.set_size(now);
+            }
+            ChangeSize::Scale { from, by } => {
+                let scale_now = (1.0).interp(by, progress);
+                // let now = from.interp(&to, progress);
+                // object.set_size(now);
+                // object.scale_by()
             }
         }
     }
     pub fn scale_by(by: f32) -> Self {
         Self::Scale {
-            from: dimension(0.0, 0.0),
-            to: dimension(0.0, 0.0),
+            from: dimension(1.0, 1.0),
+            // to: dimension(1.0, 1.0),
             by,
         }
     }

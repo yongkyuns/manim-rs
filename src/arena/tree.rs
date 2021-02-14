@@ -1,6 +1,6 @@
 use super::{Arena, HasArena};
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::{GetOpacity, Opacity, SetOpacity};
 use crate::draw::Draw;
 use crate::geom::{Dimension, GetDimension, SetDimension};
 use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
@@ -78,6 +78,9 @@ impl SetDimension for Node {
     fn set_width(&mut self, height: f32) {
         SetDimension::set_width(&mut self.inner, height);
     }
+    fn set_size(&mut self, size: Dimension) {
+        SetDimension::set_size(&mut self.inner, size);
+    }
 }
 
 impl Draw for Node {
@@ -86,12 +89,18 @@ impl Draw for Node {
     }
 }
 
-impl Visibility for Node {
-    fn visible_mut(&mut self) -> &mut bool {
-        Visibility::visible_mut(&mut self.inner)
+impl GetOpacity for Node {
+    fn opacity(&self) -> f32 {
+        GetOpacity::opacity(&self.inner)
     }
     fn is_visible(&self) -> bool {
-        Visibility::is_visible(&self.inner)
+        GetOpacity::is_visible(&self.inner)
+    }
+}
+
+impl SetOpacity for Node {
+    fn opacity_mut(&mut self) -> &mut Opacity {
+        SetOpacity::opacity_mut(&mut self.inner)
     }
 }
 

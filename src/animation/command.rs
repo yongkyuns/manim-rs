@@ -1,5 +1,5 @@
 use super::{AnimBuilder, Animation, TargetAction};
-use crate::appearance::Visibility;
+use crate::appearance::SetOpacity;
 use crate::arena::{Arena, Id, Index, Object};
 use crate::scene::Resource;
 

@@ -157,12 +157,12 @@ mod tests {
             },
         };
 
-        let mut scene = scene(win);
-        scene.add(c);
-        scene.wait(1.0);
-        scene
-            .play(c.shift(RIGHT * 100.0))
-            .run_time(1.0)
-            .rate_func(BOUNCE);
+        // let mut scene = scene(win);
+        // scene.add(c);
+        // scene.wait(1.0);
+        // scene
+        //     .play(c.shift(RIGHT * 100.0))
+        //     .run_time(1.0)
+        //     .rate_func(BOUNCE);
     }
 }

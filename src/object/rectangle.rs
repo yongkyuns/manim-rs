@@ -1,5 +1,5 @@
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::{GetOpacity, Opacity, SetOpacity};
 use crate::arena::Object;
 use crate::consts::*;
 use crate::draw::Draw;
@@ -21,8 +21,7 @@ pub struct Rectangle {
     path_completion: f32,
     color: Rgb,
     stroke_color: Rgb,
-    alpha: f32,
-    visible: bool,
+    opacity: Opacity,
 }
 
 impl Rectangle {
@@ -34,20 +33,15 @@ impl Rectangle {
             path_completion: 1.0,
             color: RED_D,
             stroke_color: DEFAULT_STROKE_COLOR,
-            alpha: 1.0,
-            visible: false,
+            opacity: Opacity::new(false),
         }
     }
 }
 
 impl Draw for Rectangle {
     fn draw(&self, draw: nannou::Draw) {
-        if self.visible {
+        if self.is_visible() {
             let mut builder = Path::builder();
-            // let start = point(
-            //     self.position.x - self.width / 2.0,
-            //     self.position.y + self.height / 2.0,
-            // );
             let start = point(-self.width() / 2.0, self.height() / 2.0);
 
             builder.move_to(start);
@@ -62,12 +56,12 @@ impl Draw for Rectangle {
 
             let color = Rgba {
                 color: self.color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
 
             let stroke_color = Rgba {
                 color: self.stroke_color,
-                alpha: self.alpha,
+                alpha: self.alpha(),
             };
 
             // Draw fill first
@@ -135,12 +129,18 @@ impl SetDimension for Rectangle {
     }
 }
 
-impl Visibility for Rectangle {
-    fn visible_mut(&mut self) -> &mut bool {
-        &mut self.visible
+impl GetOpacity for Rectangle {
+    fn opacity(&self) -> f32 {
+        GetOpacity::opacity(&self.opacity)
     }
     fn is_visible(&self) -> bool {
-        self.visible
+        GetOpacity::is_visible(&self.opacity)
+    }
+}
+
+impl SetOpacity for Rectangle {
+    fn opacity_mut(&mut self) -> &mut Opacity {
+        SetOpacity::opacity_mut(&mut self.opacity)
     }
 }
 

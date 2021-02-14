@@ -1,5 +1,5 @@
 use crate::animation::PathCompletion;
-use crate::appearance::Visibility;
+use crate::appearance::{GetOpacity, Opacity, SetOpacity};
 use crate::draw::Draw;
 use crate::geom::{Dimension, GetDimension, SetDimension};
 use crate::geom::{GetOrientation, GetPosition, Point, SetOrientation, SetPosition};
@@ -88,9 +88,16 @@ impl SetDimension for Object {
     }
     fn set_width(&mut self, width: f32) {
         match self {
-            Object::Circle(o) => SetDimension::set_height(o, width),
-            Object::Rectangle(o) => SetDimension::set_height(o, width),
-            Object::Text(o) => SetDimension::set_height(o, width),
+            Object::Circle(o) => SetDimension::set_width(o, width),
+            Object::Rectangle(o) => SetDimension::set_width(o, width),
+            Object::Text(o) => SetDimension::set_width(o, width),
+        }
+    }
+    fn set_size(&mut self, size: Dimension) {
+        match self {
+            Object::Circle(o) => SetDimension::set_size(o, size),
+            Object::Rectangle(o) => SetDimension::set_size(o, size),
+            Object::Text(o) => SetDimension::set_size(o, size),
         }
     }
 }
@@ -122,19 +129,29 @@ impl Draw for Object {
     }
 }
 
-impl Visibility for Object {
-    fn visible_mut(&mut self) -> &mut bool {
+impl GetOpacity for Object {
+    fn opacity(&self) -> f32 {
         match self {
-            Object::Circle(o) => Visibility::visible_mut(o),
-            Object::Rectangle(o) => Visibility::visible_mut(o),
-            Object::Text(o) => Visibility::visible_mut(o),
+            Object::Circle(o) => GetOpacity::opacity(o),
+            Object::Rectangle(o) => GetOpacity::opacity(o),
+            Object::Text(o) => GetOpacity::opacity(o),
         }
     }
     fn is_visible(&self) -> bool {
         match self {
-            Object::Circle(o) => o.is_visible(),
-            Object::Rectangle(o) => o.is_visible(),
-            Object::Text(o) => o.is_visible(),
+            Object::Circle(o) => GetOpacity::is_visible(o),
+            Object::Rectangle(o) => GetOpacity::is_visible(o),
+            Object::Text(o) => GetOpacity::is_visible(o),
+        }
+    }
+}
+
+impl SetOpacity for Object {
+    fn opacity_mut(&mut self) -> &mut Opacity {
+        match self {
+            Object::Circle(o) => SetOpacity::opacity_mut(o),
+            Object::Rectangle(o) => SetOpacity::opacity_mut(o),
+            Object::Text(o) => SetOpacity::opacity_mut(o),
         }
     }
 }
