@@ -55,6 +55,9 @@ impl Text {
         self.font_size = size;
         self.update_size();
     }
+    pub fn font_size(&self) -> u32 {
+        self.font_size
+    }
     fn update_size(&mut self) {
         let rect = nannou::geom::Rect::from_w_h(self.width(), self.height());
         let text = nannou::text::text(&self.string)

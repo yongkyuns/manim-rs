@@ -9,7 +9,6 @@ pub trait Dimension: Into<Index> + Copy {
                 from: degree, // This is dummy, overwritten in Action::init()
                 to: degree,
             },
-            true,
         )
     }
     fn set_height(&self, degree: f32) -> TargetAction {
@@ -20,7 +19,6 @@ pub trait Dimension: Into<Index> + Copy {
                 from: degree, // This is dummy, overwritten in Action::init()
                 by: degree,
             },
-            true,
         )
     }
 }

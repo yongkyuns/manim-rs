@@ -60,7 +60,7 @@ impl Construct for Scene {
         // self.play(r3.rotate_by(360.0 * 3.0)).rate_func(QUINT);
 
         let t = self.text("Hello!");
-        // let t = self.rectangle();
+        // let r = self.rectangle();
 
         self.act(t.move_to(point_at(-100.0, 100.0)));
         self.play(t.show_creation()).run_time(1.0);

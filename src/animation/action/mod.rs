@@ -27,7 +27,6 @@ pub trait Actionable {
     fn to_edge(&self, direction: Vector) -> TargetAction;
     fn show_creation(&self) -> TargetAction;
     fn fade_in(&self) -> TargetAction;
-    fn scale_by(&self, by: f32) -> TargetAction;
     fn set_width(&self, to: f32) -> TargetAction;
     fn set_height(&self, to: f32) -> TargetAction;
     fn rotate_by(&self, by: f32) -> TargetAction;
@@ -40,11 +39,11 @@ where
 {
     fn move_by(&self, by: Vector) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::MoveBy { from: point(), by }, true)
+        TargetAction::new(Id(index), Action::MoveBy { from: point(), by })
     }
     fn move_to(&self, to: Point) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::MoveTo { from: point(), to }, true)
+        TargetAction::new(Id(index), Action::MoveTo { from: point(), to })
     }
     fn to_edge(&self, direction: Vector) -> TargetAction {
         // Need to map direciton vector to internal enum
@@ -71,48 +70,35 @@ where
                 buffer: MED_SMALL_BUFF,
                 direction: dir_enum,
             },
-            true,
         )
     }
     fn show_creation(&self) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::ShowCreation, true)
+        TargetAction::new(Id(index), Action::ShowCreation)
     }
     fn fade_in(&self) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::FadeIn, true)
+        TargetAction::new(Id(index), Action::FadeIn)
     }
-    fn scale_by(&self, by: f32) -> TargetAction {
-        let index: Index = T::into(*self);
-        TargetAction::new(
-            Id(index),
-            Action::ChangeSize(ChangeSize::scale_by(by)),
-            true,
-        )
-    }
+    // fn scale_by(&self, by: f32) -> TargetAction {
+    //     let index: Index = T::into(*self);
+    //     TargetAction::new(Id(index), Action::ChangeSize(ChangeSize::scale_by(by)))
+    // }
     fn set_width(&self, to: f32) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(
-            Id(index),
-            Action::ChangeSize(ChangeSize::set_width(to)),
-            true,
-        )
+        TargetAction::new(Id(index), Action::ChangeSize(ChangeSize::set_width(to)))
     }
     fn set_height(&self, to: f32) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(
-            Id(index),
-            Action::ChangeSize(ChangeSize::set_height(to)),
-            true,
-        )
+        TargetAction::new(Id(index), Action::ChangeSize(ChangeSize::set_height(to)))
     }
     fn rotate_by(&self, by: f32) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::RotateBy { from: 0.0, by }, true)
+        TargetAction::new(Id(index), Action::RotateBy { from: 0.0, by })
     }
     fn rotate_to(&self, to: f32) -> TargetAction {
         let index: Index = T::into(*self);
-        TargetAction::new(Id(index), Action::RotateTo { from: 0.0, to }, true)
+        TargetAction::new(Id(index), Action::RotateTo { from: 0.0, to })
     }
 }
 
@@ -269,30 +255,32 @@ impl Action {
     }
 }
 
-pub struct Animator<T, InitFn, UpdateFn>
+struct Animator<'a, T>
 where
     T: Interpolate,
-    InitFn: FnMut(&Object) -> T,
-    UpdateFn: FnMut(&mut Object, T),
+    // InitFn: FnMut(&Object) -> T,
+    // UpdateFn: FnMut(&mut Object, T),
 {
     from: Option<T>,
     to: T,
-    initializer: InitFn,
-    updater: UpdateFn,
+    initializer: Box<dyn FnMut(&Object) -> T + 'a>,
+    updater: Box<dyn FnMut(&mut Object, T) + 'a>,
 }
 
-impl<T, InitFn, UpdateFn> Animator<T, InitFn, UpdateFn>
+impl<'a, T> Animator<'a, T>
 where
     T: Interpolate,
-    InitFn: FnMut(&Object) -> T,
-    UpdateFn: FnMut(&mut Object, T),
 {
-    pub fn new(to: T, initializer: InitFn, updater: UpdateFn) -> Self {
+    pub fn new(
+        to: T,
+        initializer: impl FnMut(&Object) -> T + 'a,
+        updater: impl FnMut(&mut Object, T) + 'a,
+    ) -> Self {
         Self {
             from: None,
             to,
-            initializer,
-            updater,
+            initializer: Box::new(initializer),
+            updater: Box::new(updater),
         }
     }
     pub fn update(&mut self, object: &mut Object, progress: f32) {
@@ -309,25 +297,41 @@ where
     }
 }
 
+// pub struct MoveTo<T=Point,I=|obj|obj.position(),U=|obj,p|obj.move_to(p)>(Animator<T,I,U>);
+
+// pub fn update(object: &mut Object, progress: f32, animator: &mut Animator<_, _, _>)
+// where
+//     P: Interpolate,
+//     I: FnMut(&Object) -> P,
+//     U: FnMut(&mut Object, P),
+// {
+//     animator.update(object, progress);
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::geom::{point_at, GetDimension, GetPosition, SetDimension, SetPosition};
     use crate::object::rectangle::rectangle;
     #[test]
-    fn test_case() {
+    fn test_action_closure() {
         let mut rec = rectangle();
-        let mut change_width = Animator::new(200.0, |obj| obj.width(), |obj, w| obj.set_width(w));
-        let mut change_pos = Animator::new(
+        let mut anim1 = Animator::new(200.0, |obj| obj.width(), |obj, w| obj.set_width(w));
+        let mut anim2 = Animator::new(
             point_at(100.0, 200.0),
             |obj| obj.position(),
             |obj, p| obj.move_to(p.x, p.y),
         );
-        for i in 0..100 {
-            change_width.update(&mut rec, i as f32 / 100.0);
-            change_pos.update(&mut rec, i as f32 / 100.0);
+        for i in 0..101 {
+            anim1.update(&mut rec, i as f32 / 100.0);
+            anim2.update(&mut rec, i as f32 / 100.0);
             dbg!(rec.width());
             dbg!(rec.position());
         }
+    }
+    #[test]
+    fn enum_size() {
+        use std::mem::size_of;
+        println!("{}", size_of::<Action>());
     }
 }

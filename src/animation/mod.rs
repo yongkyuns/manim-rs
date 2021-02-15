@@ -33,33 +33,37 @@ impl Interpolate for f32 {
     }
 }
 
+impl Interpolate for u32 {
+    fn interp_mut(&mut self, other: &Self, progress: f32) {
+        *self = lerp(*self as f32, *other as f32, progress) as u32;
+    }
+    fn interp(&self, other: &Self, progress: f32) -> Self {
+        lerp(*self as f32, *other as f32, progress) as u32
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct TargetAction {
     pub target: Id,
     pub action: Action,
-    pub finish_on_drop: bool,
 }
 
 impl TargetAction {
-    pub fn new(target: Id, action: Action, finish_on_drop: bool) -> Self {
-        Self {
-            target,
-            action,
-            finish_on_drop,
-        }
+    pub fn new(target: Id, action: Action) -> Self {
+        Self { target, action }
     }
     pub fn finish(&mut self, object: &mut Object) {
         self.action.complete(object);
     }
 }
 
-impl Drop for TargetAction {
-    fn drop(&mut self) {
-        if self.finish_on_drop {
-            // self.finish();
-        }
-    }
-}
+// impl Drop for TargetAction {
+//     fn drop(&mut self) {
+//         if self.finish_on_drop {
+//             // self.finish();
+//         }
+//     }
+// }
 
 pub trait PathCompletion {
     fn completion(&self) -> f32;

@@ -1,7 +1,7 @@
-use crate::animation::{Action, TargetAction};
+use crate::animation::{Action, ChangeSize, TargetAction};
 use crate::arena;
 use crate::arena::{Id, Index, Rotate};
-use crate::geom::{GetDimension, SetDimension};
+use crate::geom::{dimension, GetDimension, SetDimension};
 use crate::object::Object;
 use crate::scene::Resource;
 // use crate::{animation::Interpolate, geom::SetOrientation};
@@ -11,50 +11,17 @@ use crate::animation::Interpolate;
 pub struct RectangleId(pub Index);
 
 impl RectangleId {
-    pub fn set_width(&self, width: f32) -> TargetAction {
+    pub fn scale_by(&self, by: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
             Id(id),
-            Action::RectangleAction(RectangleAction::SetWidth {
-                from: width, // This is dummy, overwritten in Action::init()
-                to: width,
+            Action::ChangeSize(ChangeSize::ScaleDimension {
+                from: dimension(1.0, 1.0), // This is dummy, overwritten in Action::init()
+                to: dimension(1.0, 1.0),
+                by,
             }),
-            true,
         )
     }
-    pub fn set_height(&self, height: f32) -> TargetAction {
-        let id: Index = Self::into(*self);
-        TargetAction::new(
-            Id(id),
-            Action::RectangleAction(RectangleAction::SetHeight {
-                from: height, // This is dummy, overwritten in Action::init()
-                to: height,
-            }),
-            true,
-        )
-    }
-    // pub fn rotate_to(&self, degree: f32) -> TargetAction {
-    //     let id: Index = Self::into(*self);
-    //     TargetAction::new(
-    //         Id(id),
-    //         Action::RectangleAction(RectangleAction::RotateTo {
-    //             from: degree, // This is dummy, overwritten in Action::init()
-    //             to: degree,
-    //         }),
-    //         true,
-    //     )
-    // }
-    // pub fn rotate_by(&self, degree: f32) -> TargetAction {
-    //     let id: Index = Self::into(*self);
-    //     TargetAction::new(
-    //         Id(id),
-    //         Action::RectangleAction(RectangleAction::RotateBy {
-    //             from: degree, // This is dummy, overwritten in Action::init()
-    //             by: degree,
-    //         }),
-    //         true,
-    //     )
-    // }
 }
 
 impl From<Index> for RectangleId {

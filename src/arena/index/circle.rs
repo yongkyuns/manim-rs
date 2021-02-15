@@ -1,6 +1,7 @@
 use crate::animation::{Action, ChangeSize, Interpolate, TargetAction};
 use crate::arena;
 use crate::arena::{Id, Index};
+use crate::geom::dimension;
 use crate::object::Object;
 use crate::scene::Resource;
 
@@ -8,16 +9,26 @@ use crate::scene::Resource;
 pub struct CircleId(pub Index);
 
 impl CircleId {
-    pub fn set_radius(&self, radius: f32) -> TargetAction {
+    pub fn scale_by(&self, by: f32) -> TargetAction {
         let id: Index = Self::into(*self);
         TargetAction::new(
             Id(id),
-            // Action::CircleAction(CircleAction::SetRadius {
-            //     from: 1.0, // This is dummy, overwritten in Action::init()
-            //     to: radius,
-            // }),
-            Action::ChangeSize(ChangeSize::set_width(radius * 2.0)),
-            true,
+            Action::ChangeSize(ChangeSize::ScaleDimension {
+                from: dimension(1.0, 1.0), // This is dummy, overwritten in Action::init()
+                to: dimension(1.0, 1.0),
+                by,
+            }),
+        )
+    }
+    pub fn set_radius(&self, to: f32) -> TargetAction {
+        let size = to * 2.0;
+        let id: Index = Self::into(*self);
+        TargetAction::new(
+            Id(id),
+            Action::ChangeSize(ChangeSize::SetDimension {
+                from: dimension(size, size),
+                to: dimension(size, size),
+            }),
         )
     }
 }
